@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לומדה: הכרת דו"חות תנועה</title>
+<style>
+@font-face{font-family:'Assistant';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/Assistant-400.ttf') format('truetype')}
+@font-face{font-family:'Assistant';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/Assistant-600.ttf') format('truetype')}
+@font-face{font-family:'Assistant';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/Assistant-700.ttf') format('truetype')}
+@font-face{font-family:'Assistant';font-style:normal;font-weight:800;font-display:swap;src:url('fonts/Assistant-800.ttf') format('truetype')}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f45;--navy-m:#1a3a6b;--navy-l:#2c5282;
+  --gold:#f6c90e;--gold-d:#d4a500;
+  --bg:#eef2f7;--white:#fff;
+  --text:#1a202c;--text-m:#4a5568;
+  --ok:#38a169;--err:#e53e3e;
+  --sidebar:240px;--header:54px;
+}
+/* ── AUTO-ZOOM by screen width (desktop only) ────────────── */
+:root{--z:1}
+@media(min-width:1800px){:root{--z:1.5}body{zoom:1.5}}
+@media(min-width:1400px) and (max-width:1799px){:root{--z:1.16}body{zoom:1.16}}
+html{overflow:hidden;height:calc(100vh / var(--z,1))}
+body{font-family:'Assistant',Arial,'Helvetica Neue',sans-serif;background:var(--navy);color:var(--text);direction:rtl;text-align:right;height:calc(100vh / var(--z,1));overflow:hidden}
+
+/* ── LOGIN ────────────────────────────────── */
+#login-screen{height:calc(100vh / var(--z,1));display:flex;justify-content:center;align-items:center;background:var(--navy);padding:1rem;position:relative;overflow-y:auto}
+#login-screen::before{content:'';position:absolute;inset:0;background:url('images/pptx3_img15.png') center/cover no-repeat;opacity:.18;pointer-events:none}
+#login-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(30,61,122,.55),rgba(13,31,69,.92) 70%);pointer-events:none}
+.login-card{background:rgba(255,255,255,.97);border-radius:24px;padding:2.5rem 2rem 2rem;max-width:420px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;position:relative;z-index:1}
+.login-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--navy);color:var(--gold);padding:.3rem .9rem;border-radius:20px;font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.85rem}
+.login-emblem{font-size:3.5rem;margin-bottom:.4rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+.login-card h1{color:var(--navy);font-size:1.6rem;margin-bottom:.2rem;font-weight:800;line-height:1.25}
+.login-sub{color:var(--text-m);font-size:.95rem;margin-bottom:.5rem}
+.login-sub-detail{color:var(--navy-m);font-size:.92rem;font-weight:600;line-height:1.5;margin-bottom:1.5rem;text-align:center}
+.login-version{font-size:.72rem;color:#94a3b8;margin-top:.85rem;text-align:center}
+/* Login logos */
+.login-logos{display:flex;align-items:center;justify-content:center;gap:1.25rem;margin-bottom:1rem}
+.login-logo-img{height:64px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+.ff{text-align:right;margin-bottom:.9rem}
+.ff label{display:block;font-weight:700;color:#2d3748;margin-bottom:.3rem;font-size:.95rem}
+.ff input{width:100%;padding:.62rem .9rem;border:2px solid #e2e8f0;border-radius:10px;font-size:1.1rem;direction:rtl;font-family:inherit;transition:border .2s}
+.ff input:focus{outline:none;border-color:var(--navy-l)}
+.login-err{color:var(--err);font-size:.8rem;margin-top:.25rem;display:none}
+#btn-start{width:100%;padding:.9rem;font-size:1.15rem;font-weight:700;background:linear-gradient(135deg,var(--navy-m),var(--navy));color:var(--gold);border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:.5rem;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 18px rgba(26,58,107,.45)}
+#btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,58,107,.55)}
+
+/* ── APP SHELL ────────────────────────────── */
+#app-shell{display:none;height:calc(100vh / var(--z,1));flex-direction:column;background:var(--bg);overflow:hidden}
+#app-shell.on{display:flex}
+
+/* Header */
+.app-hdr{height:var(--header);flex-shrink:0;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;border-bottom:2px solid var(--gold);z-index:20}
+.hdr-logo{color:var(--gold);font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:.4rem}
+.hdr-learner{color:rgba(255,255,255,.75);font-size:.92rem}
+.hdr-logos{display:flex;align-items:center;gap:.65rem}
+.hdr-logo-img{height:38px;width:auto;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));flex-shrink:0}
+
+/* Body */
+.app-body{flex:1;display:flex;overflow:hidden}
+
+/* ── SIDEBAR ──────────────────────────────── */
+#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--navy);overflow-y:auto;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.1)}
+.sb-overall{padding:.75rem 1rem .5rem}
+.sb-overall-lbl{color:rgba(255,255,255,.35);font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.3rem}
+.sb-overall-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.sb-overall-fill{height:100%;background:var(--gold);transition:width .5s;border-radius:3px}
+.sb-overall-pct{color:rgba(255,255,255,.45);font-size:.8rem;margin-top:.2rem;text-align:left}
+.sb-divider{height:1px;background:rgba(255,255,255,.07);margin:.25rem 0}
+.sb-item{display:flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-right:3px solid transparent;cursor:default;transition:all .18s;position:relative}
+.sb-item.clickable,.sb-item.active{cursor:pointer}
+.sb-item.clickable:hover,.sb-item.active:hover{background:rgba(255,255,255,.05)}
+.sb-item:not(.clickable):not(.active){opacity:.45;pointer-events:none}
+.sb-item.active{background:rgba(246,201,14,.1);border-right-color:var(--gold)}
+.sb-item.done{opacity:.75}
+.sb-ico{font-size:1.05rem;flex-shrink:0;width:1.3rem;text-align:center}
+.sb-texts{flex:1;min-width:0}
+.sb-lbl{color:rgba(255,255,255,.7);font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-sub{color:rgba(255,255,255,.35);font-size:.78rem;margin-top:1px}
+.sb-item.active .sb-lbl{color:var(--gold)}
+.sb-item.active .sb-ico{filter:drop-shadow(0 0 3px rgba(246,201,14,.6))}
+.sb-chk{color:var(--ok);font-size:.9rem;flex-shrink:0}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+.sb-item.active .sb-dot{background:var(--gold)}
+.sb-item.done .sb-dot{background:var(--ok)}
+
+/* ── SLIDE AREA ───────────────────────────── */
+#slide-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#slide-vp{flex:1;overflow-y:auto;padding:1.25rem}
+#slide-wrap{max-width:700px;margin:0 auto}
+
+/* Transition */
+.anim-fwd{animation:fwd .28s ease}
+.anim-bwd{animation:bwd .28s ease}
+@keyframes fwd{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes bwd{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+
+/* Nav bar */
+.slide-nav{flex-shrink:0;background:var(--white);border-top:1px solid #e2e8f0;padding:.65rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.slide-ctr{color:var(--text-m);font-size:.92rem;text-align:center}
+.slide-ctr b{color:var(--navy-m)}
+.btn{padding:.58rem 1.4rem;border:none;border-radius:8px;cursor:pointer;font-size:.98rem;font-weight:700;font-family:inherit;transition:all .18s}
+.btn-p{background:linear-gradient(135deg,var(--navy-l),var(--navy-m));color:var(--white)}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,58,107,.3)}
+.btn-p:disabled{background:#cbd5e0;color:#a0aec0;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-s{background:var(--white);color:var(--navy-m);border:2px solid var(--navy-l)}
+.btn-s:hover:not(:disabled){background:#ebf8ff}
+.btn-s:disabled{opacity:.45;cursor:not-allowed}
+.btn-g{background:var(--gold);color:var(--navy);font-size:.9rem}
+.btn-g:hover{background:var(--gold-d)}
+
+/* ── SLIDE TYPES ──────────────────────────── */
+
+/* Intro slide */
+.s-intro{background:linear-gradient(145deg,var(--navy-m),var(--navy));border-radius:16px;padding:3rem 2rem;text-align:center;color:var(--white);min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.s-intro .ch-icon{font-size:3.5rem;margin-bottom:.75rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+.s-intro .ch-label{font-size:.82rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.4rem}
+.s-intro .ch-num{font-size:5rem;font-weight:900;color:var(--gold);line-height:1;margin-bottom:.25rem;opacity:.9}
+.s-intro .ch-title{font-size:1.65rem;font-weight:700;margin-bottom:.6rem}
+.s-intro .ch-desc{color:rgba(255,255,255,.6);font-size:1rem;max-width:380px;line-height:1.5}
+
+/* Content card */
+.s-card{background:var(--white);border-radius:14px;padding:1.5rem 1.75rem;box-shadow:0 3px 14px rgba(0,0,0,.08);margin-bottom:.75rem}
+.s-card h2{font-size:1.25rem;color:var(--navy-m);margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:2px solid #eef2f7}
+.s-card h3{font-size:1.05rem;color:var(--navy-l);margin-bottom:.5rem;margin-top:.9rem}
+.s-card h3:first-child{margin-top:0}
+.s-card p{margin-bottom:.65rem;font-size:1rem;color:#2d3748;line-height:1.6}
+.s-card ul,.s-card ol{margin-right:1.2rem;margin-bottom:.65rem}
+.s-card li{margin-bottom:.3rem;font-size:1rem;color:#2d3748;line-height:1.5}
+
+/* Tables */
+.tbl{width:100%;border-collapse:collapse;margin-bottom:.75rem;font-size:.95rem;border-radius:8px;overflow:hidden}
+.tbl th{background:var(--navy-m);color:var(--white);padding:.55rem .75rem;text-align:right;font-size:.93rem}
+.tbl td{padding:.5rem .75rem;border-bottom:1px solid #e2e8f0;font-size:.95rem}
+.tbl tr:nth-child(even) td{background:#f8faff}
+.tbl tr:last-child td{border-bottom:none}
+
+/* Info boxes */
+.bx{border-radius:8px;padding:.7rem 1rem;margin-bottom:.65rem;font-size:1rem;line-height:1.55}
+.bx-i{background:#ebf8ff;border-right:4px solid #3182ce}
+.bx-w{background:#fffbeb;border-right:4px solid var(--gold)}
+.bx-s{background:#f0fff4;border-right:4px solid var(--ok)}
+.bx-e{background:#fff5f5;border-right:4px solid var(--err)}
+
+/* Forbidden box */
+.fbd{background:#fff5f5;border:1.5px solid #fed7d7;border-right:4px solid var(--err);border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:.75rem}
+.fbd h3{color:#c53030;font-size:1.05rem;margin-bottom:.5rem}
+.fbd li{color:#742a2a;font-size:.95rem}
+
+/* ── REPORT GALLERY ───────────────────────── */
+.report-gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:.65rem;margin:1rem 0}
+@media(max-width:700px){.report-gallery{grid-template-columns:repeat(3,1fr)}}
+.rg-item{background:#fff;border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;cursor:zoom-in;transition:transform .18s,box-shadow .18s,border-color .18s;display:flex;flex-direction:column}
+.rg-item:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.13);border-color:var(--navy-l)}
+.rg-img{width:100%;height:170px;object-fit:contain;background:#fafbff;padding:.3rem;flex:1}
+.rg-caption{padding:.45rem .4rem .5rem;text-align:center;font-size:.86rem;line-height:1.4;background:var(--navy-m);color:#fff}
+.rg-caption strong{display:block;font-size:.92rem;margin-bottom:.1rem;color:var(--gold)}
+/* Lightbox */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.open{display:flex}
+#lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#lightbox-close{position:absolute;top:1rem;left:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.6rem;border-radius:50%;width:2.4rem;height:2.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* ── SUMMARY STATS ───────────────────────── */
+.sum-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.75rem}
+@media(max-width:600px){.sum-stats-grid{grid-template-columns:repeat(2,1fr)}}
+.sum-stat-card{background:#f8faff;border:1.5px solid #e2e8f0;border-radius:10px;padding:.65rem .75rem}
+.ssc-ico{font-size:1.3rem;margin-bottom:.15rem}
+.ssc-title{font-size:.9rem;font-weight:700;color:var(--navy-m);margin-bottom:.25rem}
+.ssc-detail{font-size:.88rem;color:var(--text-m);margin-bottom:.3rem}
+.ssc-bar{height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+.ssc-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+/* ── REVEAL BUTTON ───────────────────────── */
+.btn-reveal{display:inline-flex;align-items:center;gap:.4rem;margin-top:.6rem;padding:.5rem 1rem;background:linear-gradient(135deg,#c05621,#dd6b20);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;font-weight:700;font-family:inherit;transition:opacity .18s}
+.btn-reveal:hover{opacity:.88}
+/* ── FLOW DIAGRAM ───────────────────────── */
+.flow-wrap{display:flex;flex-direction:column;align-items:center;gap:0;padding:.5rem 0}
+.flow-node{border-radius:10px;padding:.55rem 1.1rem;font-size:.98rem;font-weight:700;text-align:center;min-width:160px;max-width:240px}
+.flow-node.start{background:var(--navy-m);color:#fff;border-radius:20px}
+.flow-node.action{background:#ebf8ff;color:#1a3a6b;border:2px solid #90cdf4}
+.flow-node.decision{background:#fffbeb;color:#7c5000;border:2px solid #f6e05e;transform:rotate(0deg);border-radius:4px;position:relative}
+.flow-node.ok{background:#f0fff4;color:#276749;border:2px solid #9ae6b4}
+.flow-node.warn{background:#fff5f5;color:#9b2c2c;border:2px solid #feb2b2}
+.flow-arrow{width:2px;height:22px;background:#94a3b8;margin:0 auto;position:relative}
+.flow-arrow::after{content:'▼';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:.6rem;color:#94a3b8}
+.flow-split{display:flex;gap:1.5rem;justify-content:center;align-items:flex-start;width:100%}
+.flow-branch{display:flex;flex-direction:column;align-items:center;gap:0;flex:1}
+.flow-branch-lbl{font-size:.85rem;color:var(--text-m);font-weight:600;padding:.15rem .4rem;border-radius:4px;background:#f1f5f9;margin-bottom:2px}
+.flow-hline{width:100%;height:2px;background:#94a3b8;margin:0 auto}
+/* ── EXERCISE SLIDE ───────────────────────── */
+.s-ex{background:var(--white);border-radius:16px;padding:1.6rem;box-shadow:0 4px 20px rgba(0,0,0,.1);border-top:4px solid var(--gold)}
+.ex-hdr{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.1rem;padding-bottom:.75rem;border-bottom:1px solid #f0e6c8}
+.ex-hdr-left{display:flex;align-items:center;gap:.5rem}
+.ex-hdr .ico{font-size:1.3rem}
+.ex-hdr h3{color:#92600a;font-size:1.05rem;margin:0;font-weight:700}
+.attempt-badge{font-size:.82rem;padding:.2rem .6rem;border-radius:12px;font-weight:700;background:#fef3c7;color:#92600a;border:1px solid #fcd34d;white-space:nowrap}
+.attempt-badge.attempt-2{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.ex-q{font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1rem;line-height:1.6}
+.opt{display:flex;align-items:center;gap:.6rem;width:100%;text-align:right;padding:.7rem 1rem;margin-bottom:.45rem;border:2px solid #e2e8f0;border-radius:10px;background:#fafbff;cursor:pointer;font-size:1rem;font-family:inherit;transition:all .18s;position:relative}
+.opt:hover:not(:disabled){border-color:var(--navy-l);background:#eff6ff;transform:translateX(-2px)}
+.opt.ok{background:#f0fdf4;border-color:#22c55e;color:#166534;font-weight:700}
+.opt.ok::before{content:'✓';margin-left:auto;color:#22c55e;font-size:1rem}
+.opt.bad{background:#fef2f2;border-color:#ef4444;color:#991b1b;text-decoration:line-through;opacity:.7}
+.opt.tried{background:#fff7ed;border-color:#f97316;color:#9a3412;opacity:.6}
+.opt:disabled{cursor:default;transform:none}
+.tf-row{display:flex;gap:.75rem;margin-top:.25rem}
+.tf-btn{flex:1;padding:.75rem;border:2px solid #e2e8f0;border-radius:10px;background:#fafbff;cursor:pointer;font-weight:700;font-size:1.1rem;font-family:inherit;text-align:center;transition:all .18s}
+.tf-btn:hover:not(:disabled){border-color:var(--navy-l);background:#eff6ff}
+.tf-btn.ok{background:#f0fdf4;border-color:#22c55e;color:#166534}
+.tf-btn.bad{background:#fef2f2;border-color:#ef4444;color:#991b1b}
+.mt-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap}
+.mt-lbl{min-width:160px;font-size:.98rem;font-weight:600;color:var(--navy)}
+.mt-sel{flex:1;min-width:150px;padding:.45rem .7rem;border:2px solid #e2e8f0;border-radius:8px;font-size:.95rem;direction:rtl;font-family:inherit;background:#fafbff}
+.ex-fb{margin-top:.9rem;padding:.65rem 1rem;border-radius:10px;font-size:1rem;font-weight:600;display:none;animation:fbIn .25s ease}
+@keyframes fbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ex-fb.ok{background:#f0fdf4;color:#166534;border:2px solid #86efac;display:flex;align-items:center;gap:.4rem}
+.ex-fb.ok::before{content:'✓';font-size:1.1rem}
+.ex-fb.bad{background:#fef2f2;color:#991b1b;border:2px solid #fca5a5;display:flex;align-items:center;gap:.4rem}
+.ex-fb.bad::before{content:'✗';font-size:1.1rem}
+.ex-fb.retry{background:#fff7ed;color:#9a3412;border:2px solid #fdba74;display:flex;align-items:center;gap:.4rem}
+.ex-fb.retry::before{content:'↩';font-size:1.1rem}
+.ex-hint{font-size:.88rem;color:var(--text-m);margin-top:.6rem;font-style:italic;padding:.4rem .7rem;background:#f8faff;border-radius:6px;border-right:3px solid var(--navy-l)}
+
+/* ── SUMMARY ──────────────────────────────── */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1rem 0}
+.sum-card{background:var(--white);border-radius:10px;padding:.9rem 1rem;border-right:4px solid var(--navy-l);box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.sum-card .n{font-size:1.6rem;font-weight:700;color:var(--navy-l);line-height:1}
+.sum-card .t{font-size:.95rem;font-weight:700;margin:.15rem 0;color:var(--text)}
+.sum-card .d{font-size:.85rem;color:var(--text-m)}
+
+/* ── EXAM ─────────────────────────────────── */
+.s-exam{background:var(--white);border-radius:14px;padding:1.5rem 1.75rem;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+.exam-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem}
+.exam-badge{background:var(--navy);color:var(--gold);padding:.22rem .7rem;border-radius:20px;font-size:.88rem;font-weight:700}
+.exam-progress{height:4px;background:#e2e8f0;border-radius:2px;margin-bottom:1.1rem;overflow:hidden}
+.exam-progress-fill{height:100%;background:var(--gold);transition:width .4s;border-radius:2px}
+.exam-q{font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1rem;line-height:1.55}
+.eopt{display:flex;align-items:center;gap:.6rem;width:100%;text-align:right;padding:.7rem 1rem;margin-bottom:.45rem;border:2px solid #e2e8f0;border-radius:10px;background:#fafbff;cursor:pointer;font-size:1rem;font-family:inherit;transition:all .18s}
+.eopt:hover:not(.sel){border-color:var(--navy-l);background:#eff6ff;transform:translateX(-2px)}
+.eopt.sel{border-color:var(--navy-m);background:#eff6ff;font-weight:600}
+.etf{flex:1;padding:.75rem;border:2px solid #e2e8f0;border-radius:10px;background:#fafbff;cursor:pointer;font-weight:700;font-size:1.1rem;font-family:inherit;text-align:center;transition:all .18s}
+.etf:hover:not(.sel){border-color:var(--navy-l);background:#eff6ff}
+.etf.sel{border-color:var(--navy-m);background:#eff6ff;font-weight:700}
+.emr{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap}
+.eml{flex:1;min-width:140px;font-size:.98rem;font-weight:600;color:var(--navy)}
+.ems{flex:1;min-width:150px;padding:.45rem .7rem;border:2px solid #e2e8f0;border-radius:8px;font-size:.95rem;direction:rtl;font-family:inherit;background:#fafbff}
+
+/* ── CERTIFICATE ─────────────────────────── */
+.cert-box{background:var(--white);border:2px solid var(--navy-m);border-radius:16px;padding:2rem;text-align:center;margin:1rem 0;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.cert-title{font-size:1.3rem;font-weight:800;color:var(--navy-m);margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:2px solid var(--gold)}
+.cert-body p{font-size:1rem;color:var(--text);margin-bottom:.5rem;line-height:1.6}
+.cert-name{font-size:1.5rem!important;font-weight:800!important;color:var(--navy)!important;margin:.5rem 0!important}
+.cert-date{font-size:.85rem!important;color:var(--text-m)!important;margin-top:.75rem!important}
+.cert-logos{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem;padding-top:.75rem;border-top:1px solid #e2e8f0}
+.cert-logo-img{height:44px;width:auto;object-fit:contain;opacity:.8}
+
+/* ── RESULTS REVIEW ─────────────────────────── */
+.rq-item{background:var(--white);border-radius:12px;padding:1rem 1.1rem;margin-bottom:.65rem;border-right:4px solid #cbd5e0;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.rq-item.rq-ok{border-right-color:#22c55e}
+.rq-item.rq-bad{border-right-color:#ef4444}
+.rq-hdr{display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.6rem}
+.rq-num{flex-shrink:0;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--navy-m);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;margin-top:.1rem}
+.rq-q{flex:1;font-weight:700;font-size:.95rem;color:var(--navy);line-height:1.5}
+.rq-mark{flex-shrink:0;font-size:1.1rem;font-weight:900;margin-top:.05rem}
+.rq-item.rq-ok .rq-mark{color:#22c55e}
+.rq-item.rq-bad .rq-mark{color:#ef4444}
+.rq-opts{display:flex;flex-direction:column;gap:.3rem}
+.rq-opt{padding:.4rem .75rem;border-radius:8px;font-size:.9rem;background:#f8faff;border:1.5px solid #e2e8f0;color:var(--text)}
+.rq-opt.rq-correct{background:#f0fdf4;border-color:#22c55e;color:#166534;font-weight:700}
+.rq-opt.rq-wrong{background:#fef2f2;border-color:#ef4444;color:#991b1b;text-decoration:line-through;opacity:.8}
+.rq-tf{display:flex;gap:.75rem;margin-top:.25rem}
+.rq-tf-btn{padding:.4rem 1rem;border-radius:8px;font-size:.9rem;background:#f8faff;border:1.5px solid #e2e8f0;color:var(--text);display:inline-block}
+.rq-tf-btn.rq-correct{background:#f0fdf4;border-color:#22c55e;color:#166534;font-weight:700}
+.rq-tf-btn.rq-wrong{background:#fef2f2;border-color:#ef4444;color:#991b1b;text-decoration:line-through;opacity:.8}
+.rq-match{display:flex;flex-direction:column;gap:.3rem}
+.rq-pair{display:flex;gap:.75rem;align-items:center;padding:.4rem .75rem;border-radius:8px;font-size:.9rem;flex-wrap:wrap;border:1.5px solid #e2e8f0}
+.rq-pair.rq-pair-ok{background:#f0fdf4;border-color:#22c55e}
+.rq-pair.rq-pair-bad{background:#fef2f2;border-color:#ef4444}
+.rq-pair-lbl{font-weight:700;color:var(--navy);min-width:160px}
+.rq-pair-correct{color:#166534;font-weight:700}
+.rq-explain{margin-top:.5rem;font-size:.88rem;color:var(--text-m);background:#fffbeb;border-right:3px solid var(--gold);padding:.4rem .75rem;border-radius:6px;line-height:1.5}
+/* print: show only cert */
+@media print{.results-hero,.results-review,.print-row{display:none!important}.cert-box{display:block!important;box-shadow:none;border:1px solid #ccc}}
+
+/* ── RESULTS ──────────────────────────────── */
+.results-hero{border-radius:20px;padding:2.5rem 2rem;text-align:center;color:var(--white);margin-bottom:1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.3);position:relative;overflow:hidden}
+.results-hero.pass{background:linear-gradient(145deg,#1a4731,#276749)}
+.results-hero.warn{background:linear-gradient(145deg,#7c5000,#b7791f)}
+.results-hero.fail{background:linear-gradient(145deg,#7f1d1d,#c53030)}
+.results-hero::after{content:'';position:absolute;top:-40%;left:-20%;width:200%;height:200%;background:radial-gradient(ellipse,rgba(255,255,255,.07) 0%,transparent 60%);pointer-events:none}
+.rh-name{font-size:1.05rem;opacity:.75;margin-bottom:.2rem;font-weight:400}
+.rh-score{font-size:6rem;font-weight:900;color:var(--gold);line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+.rh-pct{font-size:1.65rem;font-weight:700;margin:.1rem 0}
+.rh-date{font-size:.88rem;opacity:.5;margin:.3rem 0}
+.rh-msg{display:inline-block;margin-top:.75rem;padding:.5rem 1.4rem;background:rgba(255,255,255,.15);border-radius:20px;font-size:1.05rem;font-weight:600;backdrop-filter:blur(4px)}
+.ri{background:var(--white);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:.55rem;border-right:4px solid #cbd5e0;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ri.ok{border-color:#22c55e}
+.ri.bad{border-color:#ef4444}
+.ri-hdr{display:flex;gap:.45rem;font-weight:700;margin-bottom:.35rem;font-size:1rem;align-items:flex-start}
+.ri-icon{flex-shrink:0;width:1.4rem;height:1.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;color:#fff;margin-top:.05rem}
+.ri.ok .ri-icon{background:#22c55e}
+.ri.bad .ri-icon{background:#ef4444}
+.ri-exp{font-size:.93rem;color:var(--text-m);line-height:1.55;margin-right:1.85rem}
+
+/* Images */
+.sl-img{max-width:100%;border-radius:8px;border:1px solid #e2e8f0;display:block;margin:.75rem auto}
+.sl-iph{background:#eef2f7;border:2px dashed #a0aec0;border-radius:8px;padding:1.5rem;text-align:center;color:var(--text-m);font-style:italic;margin:.5rem 0;font-size:.95rem}
+
+/* ── HAMBURGER BUTTON (hidden on desktop) ─────────────────── */
+#mob-menu-btn{
+  display:none;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.12);border:none;color:var(--gold);
+  font-size:1.4rem;line-height:1;cursor:pointer;border-radius:7px;
+  width:2.3rem;height:2.3rem;flex-shrink:0;transition:background .18s;
+}
+#mob-menu-btn:hover,#mob-menu-btn:active{background:rgba(255,255,255,.22)}
+
+/* Close button inside sidebar drawer (mobile only) */
+#sb-close-btn{
+  display:none;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);
+  font-size:1.2rem;cursor:pointer;border-radius:50%;
+  width:2rem;height:2rem;flex-shrink:0;transition:background .18s;
+  position:absolute;top:.7rem;left:.7rem;
+}
+#sb-close-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+
+/* ── DARK OVERLAY behind sidebar (mobile) ─────────────────── */
+#mob-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:150;touch-action:none;
+}
+#mob-overlay.open{display:block}
+
+/* ── SMOOTH TOUCH SCROLLING on scroll containers ─────────── */
+#slide-vp,#sidebar{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* ── TABLET  641 – 1024 px ───────────────────────────────── */
+@media(min-width:641px) and (max-width:1024px){
+  :root{--sidebar:200px}
+  .hdr-logo{font-size:.92rem}
+  .hdr-logo-img{height:30px}
+  #slide-vp{padding:1rem}
+  .s-card{padding:1.2rem 1.3rem}
+}
+
+/* ── MOBILE  ≤ 767 px ────────────────────────────────────── */
+@media(max-width:767px){
+  /* ── viewport height fix (handles iOS address bar) */
+  html,body{height:100%;overflow:hidden}
+  #login-screen,#app-shell{
+    height:100vh;             /* fallback */
+    height:100dvh;            /* modern: excludes browser chrome */
+  }
+
+  /* ── Login */
+  #login-screen{
+    padding:.75rem;
+    align-items:flex-start;
+    padding-top:max(1.5rem, env(safe-area-inset-top, 1.5rem));
+    overflow-y:auto;
+  }
+  .login-card{
+    padding:1.4rem 1.1rem 1.3rem;
+    border-radius:16px;
+    max-width:100%;
+  }
+  .login-logo-img{height:44px}
+  .login-badge{font-size:.75rem;padding:.25rem .7rem}
+  .login-card h1{font-size:1.3rem}
+  .login-sub{font-size:.87rem}
+  .login-sub-detail{font-size:.82rem;margin-bottom:1.1rem}
+  #btn-start{font-size:1.05rem;padding:.85rem}
+
+  /* ── Header */
+  .app-hdr{padding:0 .65rem;gap:.4rem}
+  #mob-menu-btn{display:flex}
+  #sb-close-btn{display:flex}
+  .hdr-logos{display:none}
+  .hdr-logo{
+    font-size:.88rem;flex:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;
+  }
+  .hdr-learner{
+    font-size:.75rem;flex-shrink:0;
+    max-width:5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* ── Sidebar: RTL slide-in drawer */
+  #sidebar{
+    position:fixed;
+    top:0;right:-290px;
+    width:275px;
+    height:100vh;height:100dvh;
+    z-index:200;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    transition:right .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:none;
+    /* GPU layer for smooth animation */
+    will-change:right;
+    -webkit-transform:translateZ(0);
+  }
+  #sidebar.mob-open{
+    right:0;
+    box-shadow:-6px 0 32px rgba(0,0,0,.55);
+  }
+  /* Add top padding so content clears the close button */
+  .sb-overall{padding-top:2.8rem}
+
+  /* ── App body: sidebar is fixed so slide-area fills all */
+  #app-shell{height:100vh;height:100dvh}
+  .app-body{overflow:hidden}
+  #slide-area{flex:1;width:100%}
+  #slide-vp{padding:.75rem .65rem}
+  #slide-wrap{max-width:100%}
+
+  /* ── Nav bar */
+  .slide-nav{padding:.5rem .65rem;gap:.3rem}
+  .btn{padding:.7rem .9rem;font-size:.92rem;min-height:44px}
+  .slide-ctr{font-size:.8rem}
+
+  /* ── Content cards */
+  .s-card{padding:1rem}
+  .s-card h2{font-size:1.1rem}
+  .s-card h3{font-size:.97rem}
+  .s-card p,.s-card li{font-size:.95rem}
+
+  /* ── Tables: block-level so they scroll independently */
+  .tbl{
+    display:block;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    font-size:.84rem;
+    border-radius:0;
+    /* table width stays auto — scrolls when needed */
+  }
+  .tbl th,.tbl td{padding:.4rem .5rem;white-space:nowrap}
+  /* allow text wrap in first column on narrow screens */
+  .tbl td:first-child,.tbl th:first-child{white-space:normal;min-width:80px}
+
+  /* ── Intro slide */
+  .s-intro{padding:1.8rem 1rem;min-height:180px}
+  .s-intro .ch-num{font-size:3.5rem}
+  .s-intro .ch-title{font-size:1.2rem}
+  .s-intro .ch-desc{font-size:.9rem}
+
+  /* ── Info boxes */
+  .bx{font-size:.93rem;padding:.6rem .85rem}
+
+  /* ── Report gallery */
+  .report-gallery{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .rg-img{height:120px}
+
+  /* ── Exercise */
+  .s-ex{padding:1rem}
+  .ex-q{font-size:1rem}
+  .opt{font-size:.93rem;padding:.65rem .8rem;min-height:44px}
+  .tf-btn{font-size:1rem;padding:.7rem;min-height:44px}
+  .mt-row{flex-direction:column;align-items:flex-start;gap:.3rem}
+  .mt-lbl{min-width:unset;width:100%}
+  /* iOS: font-size ≥ 16px prevents auto-zoom on focus */
+  .mt-sel{width:100%;min-width:unset;font-size:16px}
+
+  /* ── Exam */
+  .s-exam{padding:1rem}
+  .exam-q{font-size:1rem}
+  .eopt{font-size:.93rem;padding:.65rem .8rem;min-height:44px}
+  .etf{font-size:1rem;padding:.7rem;min-height:44px}
+  .emr{flex-direction:column;align-items:flex-start;gap:.3rem}
+  .eml{min-width:unset;width:100%}
+  .ems{width:100%;min-width:unset;font-size:16px}
+
+  /* ── Summary */
+  .sum-grid{grid-template-columns:1fr}
+  .sum-stats-grid{grid-template-columns:1fr 1fr}
+
+  /* ── Results */
+  .results-hero{padding:1.4rem .85rem;border-radius:14px;margin-bottom:.9rem}
+  .rh-score{font-size:4rem}
+  .rh-pct{font-size:1.3rem}
+  .rh-msg{font-size:.88rem;padding:.35rem .9rem}
+  .rq-pair-lbl{min-width:unset}
+  .rq-pair{flex-direction:column;align-items:flex-start;gap:.2rem}
+  .cert-box{padding:1.2rem .9rem}
+
+  /* ── Flow diagram */
+  .flow-split{gap:.6rem}
+  .flow-node{font-size:.86rem;padding:.4rem .65rem;min-width:100px;max-width:180px}
+
+  /* ── Safe area (iPhone notch) */
+  .slide-nav{
+    padding-bottom:max(.5rem, env(safe-area-inset-bottom, .5rem));
+  }
+}
+
+/* ── SLIDE NUMBER (discreet) ─────────────── */
+.pg-num{
+  text-align:left;
+  color:rgba(100,116,139,.22);
+  font-size:.65rem;
+  font-weight:600;
+  pointer-events:none;
+  user-select:none;
+  padding:.1rem .2rem;
+  margin-top:.4rem;
+  line-height:1;
+  letter-spacing:.03em;
+}
+
+/* Print */
+@media print{
+  #login-screen,#mob-overlay,#mob-menu-btn{display:none!important}
+  .app-hdr,#sidebar,.slide-nav{display:none!important}
+  #app-shell{display:block!important;height:auto}
+  .app-body{display:block!important}
+  #slide-area{overflow:visible}
+  #slide-vp{overflow:visible;padding:.5rem}
+  .results-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ri{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ───────────────────────────────── -->
+<div id="lightbox"><button id="lightbox-close">✕</button><img id="lightbox-img" src="" alt=""></div>
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-badge">👮 מגמת את"ן | המכללה הלאומית לשוטרים</div>
+    <div class="login-logos">
+      <img src="images/logo_traffic.png" class="login-logo-img" alt="אגף התנועה">
+      <img src="images/logo_college.png" class="login-logo-img" alt="המכללה הלאומית לשוטרים">
+    </div>
+    <h1>לומדה: הכרת דו"חות תנועה</h1>
+    <p class="login-sub">ידע מקצועי לשוטר</p>
+    <p class="login-sub-detail">בסיום הלומדה מבחן הסמכה הכולל הנפקת אישור ביצוע הלומדה, הכולל את שמך כפי שיוקלד כאן</p>
+    <div class="ff">
+      <label for="inp-name">שם הלומד/ת <span style="color:#e53e3e">*</span></label>
+      <input type="text" id="inp-name" placeholder="הזן/י שם מלא" autocomplete="off">
+      <div class="login-err" id="name-err">יש להזין שם לפני התחלת הלומדה</div>
+    </div>
+    <button id="btn-start">◀ התחל לומדה</button>
+    <p class="login-version">מעודכן לתאריך 17/05/2026</p>
+  </div>
+</div>
+
+<!-- ── APP SHELL ────────────────────────────── -->
+<div id="app-shell">
+  <header class="app-hdr">
+    <button id="mob-menu-btn" aria-label="פתח תפריט">☰</button>
+    <div class="hdr-logo">👮 לומדה: הכרת דו&quot;חות תנועה</div>
+    <div class="hdr-logos">
+      <img src="images/logo_traffic.png" class="hdr-logo-img" alt="אגף התנועה">
+      <img src="images/logo_college.png" class="hdr-logo-img" alt="המכללה הלאומית לשוטרים">
+    </div>
+    <div class="hdr-learner" id="hdr-learner"></div>
+  </header>
+  <div class="app-body">
+    <aside id="sidebar">
+      <button id="sb-close-btn" aria-label="סגור תפריט">✕</button>
+      <div class="sb-overall">
+        <div class="sb-overall-lbl">התקדמות כללית</div>
+        <div class="sb-overall-bar"><div class="sb-overall-fill" id="sb-fill" style="width:0%"></div></div>
+        <div class="sb-overall-pct" id="sb-pct">0%</div>
+      </div>
+      <div class="sb-divider"></div>
+      <div id="sb-items"></div>
+    </aside>
+    <div id="slide-area">
+      <div id="slide-vp"><div id="slide-wrap"></div></div>
+      <div class="slide-nav">
+        <button class="btn btn-s" id="btn-prev">הקודם ▶</button>
+        <div class="slide-ctr" id="slide-ctr"></div>
+        <button class="btn btn-p" id="btn-next">◀ הבא</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="mob-overlay"></div>
+<div id="print-area"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ══════════════════════════════════════════
+   SLIDE DATA
+══════════════════════════════════════════ */
+var SLIDES = buildSlides();
+var TOTAL  = SLIDES.length;
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+var cur        = 0;
+var maxReached = 0;   // furthest slide ever visited this session
+var name    = '';
+var demoMode = false; // true when code 74646 entered — full unlock
+var answered= {};   // slideIdx -> true (exercise answered)
+var attempts= {};   // slideIdx -> number of wrong attempts (0=none,1=one)
+var examAns = {};   // qId -> answer
+var examOptOrder = {}; // qId -> shuffled indices array (stable across nav)
+var dir     = 1;    // 1=forward, -1=back
+
+/* ══════════════════════════════════════════
+   SIDEBAR SECTIONS
+══════════════════════════════════════════ */
+var SECTIONS = [
+  {ico:'📋', lbl:'מבוא',          sub:'סוגי הדו"חות',        ch:1},
+  {ico:'⚠️', lbl:'דו"ח התראה',   sub:'אזהרה',               ch:2},
+  {ico:'⚖️', lbl:'ברירת משפט',   sub:'ב"מ',                  ch:3},
+  {ico:'🏛️', lbl:'הפרה מנהלית',  sub:'חוק 2026',             ch:4},
+  {ico:'📜', lbl:'הזמנה לדין',   sub:'ודו"ח פנימי',          ch:5},
+  {ico:'📊', lbl:'טבלאות עזר',   sub:'ורישום שני דו"חות',   ch:6},
+  {ico:'📝', lbl:'מבחן מסכם',    sub:'10 שאלות',             ch:99}
+];
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.getElementById('btn-start').addEventListener('click', startApp);
+/* Lightbox */
+(function(){
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lightbox-img');
+  document.getElementById('lightbox-close').addEventListener('click', function(){ lb.classList.remove('open'); });
+  lb.addEventListener('click', function(e){ if(e.target===lb) lb.classList.remove('open'); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') lb.classList.remove('open'); });
+  document.body.addEventListener('click', function(e){
+    var img = e.target.closest('.rg-img');
+    if(img){ lbImg.src = img.src; lb.classList.add('open'); }
+  });
+})();
+document.getElementById('inp-name').addEventListener('keydown', function(e){ if(e.key==='Enter') startApp(); });
+document.getElementById('inp-name').addEventListener('input', function(){ document.getElementById('name-err').style.display='none'; });
+document.getElementById('btn-prev').addEventListener('click', function(){ nav(-1); });
+document.getElementById('btn-next').addEventListener('click', function(){ nav(1); });
+/* ── Mobile sidebar drawer ─────────────────────────────── */
+(function(){
+  var sb       = document.getElementById('sidebar');
+  var overlay  = document.getElementById('mob-overlay');
+  var openBtn  = document.getElementById('mob-menu-btn');
+  var closeBtn = document.getElementById('sb-close-btn');
+  function openMob(){
+    sb.classList.add('mob-open');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden'; // prevent body scroll on iOS
+  }
+  function closeMob(){
+    sb.classList.remove('mob-open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  if(openBtn)  openBtn.addEventListener('click', openMob);
+  if(closeBtn) closeBtn.addEventListener('click', closeMob);
+  if(overlay)  overlay.addEventListener('click', closeMob);
+  // Expose so navigation code can close it
+  window._closeMobSidebar = closeMob;
+  // Close on resize to desktop
+  window.addEventListener('resize', function(){ if(window.innerWidth > 767) closeMob(); });
+  // Escape key
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMob(); });
+})();
+
+function startApp(){
+  var v = document.getElementById('inp-name').value.trim();
+  if(!v){ document.getElementById('name-err').style.display='block'; document.getElementById('inp-name').focus(); return; }
+  // Demo / preview mode
+  if(v === '74646'){
+    demoMode = true;
+    name = 'אישור לדוגמה בלבד';
+  } else {
+    demoMode = false;
+    name = v;
+  }
+  try{ sessionStorage.setItem('ln',v); }catch(e){}
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.add('on');
+  document.getElementById('hdr-learner').textContent = demoMode ? '👁 מצב תצוגה' : 'שלום, '+name;
+  buildSidebar();
+  goTo(0, 1);
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function nav(d){
+  var next = cur + d;
+  if(next < 0 || next >= TOTAL) return;
+  // Block going back from first exam question into lomda content (unless demo mode)
+  if(!demoMode && d < 0 && SLIDES[cur].type === 'exam' && SLIDES[next].type !== 'exam') return;
+  dir = d;
+  goTo(next, d);
+}
+
+function goTo(idx, d){
+  cur = idx;
+  if(cur > maxReached) maxReached = cur;
+  var sl = SLIDES[cur];
+  var wrap = document.getElementById('slide-wrap');
+  var cls  = d >= 0 ? 'anim-fwd' : 'anim-bwd';
+  wrap.classList.remove('anim-fwd','anim-bwd');
+  void wrap.offsetWidth;
+  wrap.innerHTML = renderSlide(sl);
+  wrap.classList.add(cls);
+  attachListeners(sl);
+  updateNav();
+  updateSidebar();
+  document.getElementById('slide-vp').scrollTop = 0;
+  // Always close mobile sidebar on any navigation
+  if(window._closeMobSidebar) window._closeMobSidebar();
+}
+
+function updateNav(){
+  var sl = SLIDES[cur];
+  var prevBtn = document.getElementById('btn-prev');
+  var nextBtn = document.getElementById('btn-next');
+  prevBtn.disabled = (cur === 0);
+  var isExam   = sl.type === 'exam';
+  var isResult = sl.type === 'results';
+  var isEx     = sl.type === 'exercise';
+  var needAns  = isEx && !answered[cur];
+  nextBtn.disabled = demoMode ? false : needAns;
+  nextBtn.style.display = isResult ? 'none' : 'inline-block';
+  prevBtn.style.display = (isExam || isResult) ? 'none' : 'inline-block';
+  if(isResult){
+    nextBtn.style.display = 'none';
+    prevBtn.style.display = demoMode ? 'inline-block' : 'none';
+  } else if(isExam){
+    var examIdx = cur - firstExamIdx();
+    prevBtn.style.display = (demoMode || examIdx > 0) ? 'inline-block' : 'none';
+    prevBtn.disabled = false;
+    nextBtn.style.display = 'inline-block';
+  }
+  if(isExam) nextBtn.textContent = (cur === TOTAL-2) ? '◀ סיים מבחן' : '◀ הבא';
+  else nextBtn.textContent = (cur === TOTAL-2) ? '◀ סיים' : '◀ הבא';
+
+  var ctr = document.getElementById('slide-ctr');
+  if(isExam){
+    var examIdx2 = cur - firstExamIdx();
+    ctr.innerHTML = 'שאלה <b>'+(examIdx2+1)+'</b>';
+  } else if(isResult){
+    ctr.innerHTML = '';
+  } else {
+    ctr.innerHTML = '<b>'+(cur+1)+'</b>';
+  }
+}
+
+function firstExamIdx(){
+  for(var i=0;i<SLIDES.length;i++) if(SLIDES[i].type==='exam') return i;
+  return 0;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════ */
+function buildSidebar(){
+  var el = document.getElementById('sb-items');
+  el.innerHTML = SECTIONS.map(function(sec,i){
+    return '<div class="sb-item" id="sbi-'+i+'" data-sec="'+i+'">' +
+      '<span class="sb-ico">'+sec.ico+'</span>' +
+      '<div class="sb-texts"><div class="sb-lbl">'+sec.lbl+'</div><div class="sb-sub">'+sec.sub+'</div></div>' +
+      '<span class="sb-dot" id="sbd-'+i+'"></span>' +
+    '</div>';
+  }).join('<div class="sb-divider"></div>');
+  el.addEventListener('click', function(e){
+    var item = e.target.closest('[data-sec]');
+    if(!item) return;
+    // Block sidebar nav during exam / results (unless demo mode)
+    if(!demoMode && (SLIDES[cur].type==='exam' || SLIDES[cur].type==='results')) return;
+    var secIdx = parseInt(item.dataset.sec);
+    var sec    = SECTIONS[secIdx];
+    var firstSlide = SLIDES.findIndex(function(s){ return s.chapter===sec.ch; });
+    if(firstSlide >= 0 && (demoMode || firstSlide <= maxReached)){
+      goTo(firstSlide, firstSlide < cur ? -1 : 1);
+      // Close mobile drawer after navigation
+      if(window._closeMobSidebar) window._closeMobSidebar();
+    }
+  });
+}
+
+function updateSidebar(){
+  var sl = SLIDES[cur];
+  var pct = Math.round((cur/(TOTAL-1))*100);
+  document.getElementById('sb-fill').style.width = pct+'%';
+  document.getElementById('sb-pct').textContent = pct+'%';
+
+  // During exam/results (non-demo): lock all chapter sidebar items
+  var inExam = !demoMode && (sl.type === 'exam' || sl.type === 'results');
+
+  SECTIONS.forEach(function(sec,i){
+    var item = document.getElementById('sbi-'+i);
+    var dot  = document.getElementById('sbd-'+i);
+    if(!item) return;
+    item.classList.remove('active','done','clickable');
+    var firstSlide = SLIDES.findIndex(function(s){ return s.chapter===sec.ch; });
+    var lastSlide  = -1;
+    for(var j=SLIDES.length-1;j>=0;j--) if(SLIDES[j].chapter===sec.ch){ lastSlide=j; break; }
+    var isCurrent = sl.chapter === sec.ch;
+    // When in exam all non-exam sections appear locked; use maxReached for reached/done state
+    var isDone  = !inExam && lastSlide >= 0 && maxReached > lastSlide;
+    var isReach = !inExam && !isCurrent && firstSlide >= 0 && (demoMode || firstSlide <= maxReached);
+    if(isCurrent){ item.classList.add('active'); dot.textContent='●'; dot.style.color='var(--gold)'; }
+    else if(isDone){ item.classList.add('done','clickable'); dot.textContent='✓'; dot.style.color='var(--ok)'; }
+    else if(isReach){ item.classList.add('clickable'); dot.textContent='○'; dot.style.color='rgba(255,255,255,.3)'; }
+    else { dot.textContent=''; }
+  });
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function renderSlide(sl){
+  var html;
+  if(sl.type==='intro')    html = renderIntro(sl);
+  else if(sl.type==='content')  html = sl.html;
+  else if(sl.type==='exercise') html = renderEx(sl);
+  else if(sl.type==='summary')  html = renderSummary();
+  else if(sl.type==='exam')     html = renderExam(sl);
+  else if(sl.type==='results')  html = renderResults();
+  else html = '';
+  // Discreet slide number on every slide except the first
+  if(cur > 0) html += '<div class="pg-num">'+(cur+1)+'</div>';
+  return html;
+}
+
+function renderIntro(sl){
+  return '<div class="s-intro">' +
+    '<div class="ch-icon">'+sl.icon+'</div>' +
+    '<div class="ch-label">פרק '+sl.chNum+' מתוך 6</div>' +
+    '<div class="ch-num">'+sl.chNum+'</div>' +
+    '<div class="ch-title">'+sl.title+'</div>' +
+    '<div class="ch-desc">'+sl.desc+'</div></div>';
+}
+
+function renderEx(sl){
+  var att = attempts[cur] || 0;
+  var badgeCls = att >= 1 ? 'attempt-badge attempt-2' : 'attempt-badge';
+  var badgeTxt = att >= 1 ? 'ניסיון שני' : 'ניסיון ראשון';
+  var html = '<div class="s-ex">' +
+    '<div class="ex-hdr"><div class="ex-hdr-left"><span class="ico">🖊️</span><h3>'+sl.exTitle+'</h3></div>' +
+    '<span class="'+badgeCls+'">'+badgeTxt+'</span></div>' +
+    '<div class="ex-q">'+sl.q+'</div>';
+  if(sl.exType==='mc'){
+    var ltrs = ['א','ב','ג','ד'];
+    sl.opts.forEach(function(o,i){ html += '<button class="opt" data-i="'+i+'"><span>'+ltrs[i]+'.</span><span>'+o+'</span></button>'; });
+  } else if(sl.exType==='tf'){
+    html += '<div class="tf-row"><button class="tf-btn" data-v="true">✓ נכון</button><button class="tf-btn" data-v="false">✗ לא נכון</button></div>';
+  } else if(sl.exType==='match'){
+    sl.pairs.forEach(function(p,i){
+      html += '<div class="mt-row"><span class="mt-lbl">'+p.lbl+'</span><select class="mt-sel" id="ms'+i+'"><option value="">— בחר —</option>';
+      sl.matchOpts.forEach(function(o){ html += '<option>'+o+'</option>'; });
+      html += '</select></div>';
+    });
+    html += '<button class="btn btn-p" id="chk" style="margin-top:.75rem">בדוק התאמות</button>';
+  }
+  if(sl.hint) html += '<div class="ex-hint">💡 '+sl.hint+'</div>';
+  html += '<div class="ex-fb" id="exfb"></div></div>';
+  return html;
+}
+
+function renderSummary(){
+  /* Per-chapter mistake stats */
+  var chDefs = [
+    {ch:1,ico:'📋',t:'מבוא'},
+    {ch:2,ico:'⚠️',t:'דו"ח התראה'},
+    {ch:3,ico:'⚖️',t:'ברירת משפט'},
+    {ch:4,ico:'🏛️',t:'הפרה מנהלית'},
+    {ch:5,ico:'📜',t:'הזמנה לדין'},
+    {ch:6,ico:'📊',t:'טבלאות עזר'}
+  ];
+  var totalEx=0, totalMistakes=0;
+  var statsHtml = '<div class="sum-stats-grid">';
+  chDefs.forEach(function(def){
+    var exSlides = SLIDES.filter(function(s,i){ return s.type==='exercise' && s.chapter===def.ch; });
+    var mistakes = 0;
+    exSlides.forEach(function(s,j){
+      var idx = SLIDES.indexOf(s);
+      if((attempts[idx]||0) > 0) mistakes++;
+    });
+    totalEx += exSlides.length;
+    totalMistakes += mistakes;
+    var errRate = exSlides.length ? Math.round(mistakes/exSlides.length*100) : 0;
+    var color = mistakes===0?'#276749':mistakes<exSlides.length?'#7c5000':'#9b2c2c';
+    statsHtml += '<div class="sum-stat-card">'+
+      '<div class="ssc-ico">'+def.ico+'</div>'+
+      '<div class="ssc-title">'+def.t+'</div>'+
+      '<div class="ssc-detail">'+exSlides.length+' שאלות | '+
+        '<span style="color:'+color+';font-weight:700">'+mistakes+' טעויות</span>'+
+      '</div>'+
+      '<div class="ssc-bar"><div class="ssc-bar-fill" style="width:'+errRate+'%;background:'+color+'"></div></div>'+
+    '</div>';
+  });
+  statsHtml += '</div>';
+  var overallRate = totalEx ? totalMistakes/totalEx : 0;
+  var alertHtml = '';
+  if(overallRate > 0.5){
+    alertHtml = '<div class="bx bx-e" style="margin-bottom:.75rem">'+
+      '⚠️ <strong>שיעור הטעויות הכולל שלך גבוה מ-50%.</strong> מומלץ לחזור על הלומדה כדי לשפר את ההבנה לפני המבחן. ניתן גם להמשיך למבחן עכשיו.'+
+    '</div>';
+  }
+  return '<div class="s-card"><div class="s-intro" style="margin-bottom:.75rem">' +
+    '<div class="ch-icon">📊</div><div class="ch-title">סיכום הלומדה – '+name+'</div>' +
+    '<div class="ch-desc">סיימת את כל 6 הפרקים. להלן סיכום הביצועים שלך לפי פרק:</div></div>' +
+    statsHtml +
+    alertHtml +
+    '<div class="bx bx-w"><strong>⚠️ שימו לב:</strong> במבחן לא ניתן לחזור לתכני הלומדה. ניתן לנווט קדימה ואחורה בין שאלות המבחן. אין משוב מיידי.</div></div>';
+}
+function sumCard(n,ico,t,d){ return '<div class="sum-card"><div class="n">'+ico+' '+n+'</div><div class="t">'+t+'</div><div class="d">'+d+'</div></div>'; }
+
+function renderExam(sl){
+  var qs = examQuestions();
+  var qi = qs.indexOf(sl);
+  var total = qs.length;
+  var pct = Math.round((qi/total)*100);
+  var html = '<div class="s-exam">' +
+    '<div class="exam-hdr"><div class="exam-badge">מבחן מסכם</div><span style="font-size:.82rem;color:var(--text-m)">שאלה '+(qi+1)+' / '+total+'</span></div>' +
+    '<div class="exam-progress"><div class="exam-progress-fill" style="width:'+pct+'%"></div></div>' +
+    '<div class="exam-q">'+sl.q+'</div>';
+  if(sl.exType==='mc'){
+    // Build shuffled order once per question, stable across back/forward nav
+    if(!examOptOrder[sl.id]){
+      var idx=sl.opts.map(function(_,i){return i;});
+      for(var si=idx.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var st=idx[si];idx[si]=idx[sj];idx[sj]=st;}
+      examOptOrder[sl.id]=idx;
+    }
+    var ltrs=['א','ב','ג','ד'];
+    examOptOrder[sl.id].forEach(function(origI,pos){
+      html+='<button class="eopt" data-i="'+origI+'"><span>'+ltrs[pos]+'.</span><span>'+sl.opts[origI]+'</span></button>';
+    });
+  } else if(sl.exType==='tf'){
+    html += '<div class="tf-row"><button class="etf" data-v="true">✓ נכון</button><button class="etf" data-v="false">✗ לא נכון</button></div>';
+  } else if(sl.exType==='match'){
+    // Shuffle matchOpts once per question
+    if(!examOptOrder[sl.id+'_m']){
+      var mo=sl.matchOpts.slice();
+      for(var mi=mo.length-1;mi>0;mi--){var mj=Math.floor(Math.random()*(mi+1));var mt=mo[mi];mo[mi]=mo[mj];mo[mj]=mt;}
+      examOptOrder[sl.id+'_m']=mo;
+    }
+    var shuffledOpts=examOptOrder[sl.id+'_m'];
+    sl.pairs.forEach(function(p,i){
+      html+='<div class="emr"><span class="eml">'+p.lbl+'</span><select class="ems" id="ems'+i+'"><option value="">— בחר —</option>';
+      shuffledOpts.forEach(function(o){ html+='<option>'+o+'</option>'; });
+      html+='</select></div>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderResults(){
+  var qs = examQuestions();
+  var total = qs.length;
+  var score = 0;
+  qs.forEach(function(q){ if(isCorrect(q, examAns[q.id])) score++; });
+  var pct = Math.round(score/total*100);
+  var heroClass = score >= Math.ceil(total*0.7) ? 'pass' : score >= Math.floor(total*0.6) ? 'warn' : 'fail';
+  var msg = pct===100 ? '🏆 מושלם! שליטה מלאה בחומר' :
+            pct>=70   ? '✅ כל הכבוד! ידע טוב' :
+            pct>=60   ? '⚠️ עברת בקושי – כדאי לחזור על החומר' :
+                        '❌ לא עברת – יש לחזור על הפרקים ולגשת שוב';
+  var date = new Date().toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+  var ltrs = ['א','ב','ג','ד'];
+
+  /* ── Full exam review ── */
+  var review = '<div class="results-review">';
+  review += '<h2 style="font-size:1.1rem;color:var(--navy-m);margin:.5rem 0 .75rem;font-weight:700">📋 סיכום המבחן</h2>';
+  qs.forEach(function(q, qi){
+    var ans = examAns[q.id];
+    var ok = isCorrect(q, ans);
+    review += '<div class="rq-item '+(ok?'rq-ok':'rq-bad')+'">';
+    review += '<div class="rq-hdr"><div class="rq-num">'+(qi+1)+'</div><div class="rq-q">'+q.q+'</div><div class="rq-mark">'+(ok?'✓':'✗')+'</div></div>';
+    if(q.exType==='mc'){
+      var order = examOptOrder[q.id] || q.opts.map(function(_,i){return i;});
+      review += '<div class="rq-opts">';
+      order.forEach(function(origI, pos){
+        var isCorr=(origI===q.correct), isChosen=(ans===origI);
+        var cls = isCorr?'rq-opt rq-correct':(isChosen?'rq-opt rq-wrong':'rq-opt');
+        review += '<div class="'+cls+'">'+ltrs[pos]+'. '+q.opts[origI]+'</div>';
+      });
+      review += '</div>';
+    } else if(q.exType==='tf'){
+      review += '<div class="rq-tf">';
+      [true,false].forEach(function(bv){
+        var isCorr=(q.correct===bv), isChosen=(ans===bv);
+        var cls=isCorr?'rq-tf-btn rq-correct':(isChosen?'rq-tf-btn rq-wrong':'rq-tf-btn');
+        review += '<span class="'+cls+'">'+(bv?'✓ נכון':'✗ לא נכון')+'</span>';
+      });
+      review += '</div>';
+    } else if(q.exType==='match'){
+      review += '<div class="rq-match">';
+      q.pairs.forEach(function(p,pi){
+        var uv=ans&&ans[pi]?ans[pi]:'—', pOk=(uv===p.correct);
+        review += '<div class="rq-pair '+(pOk?'rq-pair-ok':'rq-pair-bad')+'">'+
+          '<span class="rq-pair-lbl">'+p.lbl+'</span>'+
+          '<span>'+(pOk?'<span class="rq-pair-correct">'+uv+'</span>':uv+' &nbsp;→&nbsp; <span class="rq-pair-correct">'+p.correct+'</span>')+'</span>'+
+        '</div>';
+      });
+      review += '</div>';
+    }
+    if(!ok&&q.explain) review += '<div class="rq-explain">💡 '+q.explain+'</div>';
+    review += '</div>';
+  });
+  review += '</div>';
+
+  /* ── Certificate ── */
+  var cert =
+    '<div class="cert-box">' +
+      '<div class="cert-title">📜 אישור ביצוע לומדה</div>' +
+      '<div class="cert-body">' +
+        '<p>מאשר בזאת כי</p>' +
+        '<p class="cert-name">'+name+'</p>' +
+        '<p>השלים/ה את לומדת <strong>הכרת דו"חות תנועה</strong></p>' +
+        '<p>ציון סופי: <strong>'+score+' מתוך '+total+' ('+pct+'%)</strong></p>' +
+        '<p class="cert-date">'+date+'</p>' +
+      '</div>' +
+      '<div class="cert-logos">' +
+        '<img src="images/logo_traffic.png" class="cert-logo-img" alt="">' +
+        '<img src="images/logo_college.png" class="cert-logo-img" alt="">' +
+      '</div>' +
+    '</div>';
+
+  return (
+    '<div class="results-hero '+heroClass+'">' +
+      '<div class="rh-name">'+name+'</div>' +
+      '<div class="rh-score">'+score+'/'+total+'</div>' +
+      '<div class="rh-pct">'+pct+'%</div>' +
+      '<div class="rh-date">'+date+'</div>' +
+      '<div class="rh-msg">'+msg+'</div>' +
+    '</div>' +
+    review + cert +
+    '<div class="print-row" style="display:flex;gap:.75rem;margin-top:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap">' +
+    '<button class="btn btn-p" id="btn-print">🖨️ הפק אישור</button>' +
+    '<button class="btn btn-s" id="btn-restart">↩ חזור לתחילת הלומדה</button></div>'
+  );
+}
+
+function isCorrect(q, ans){
+  if(!q) return false;
+  if(q.exType==='mc')    return ans===q.correct;
+  if(q.exType==='tf')    return ans===q.correct;
+  if(q.exType==='match') return Array.isArray(ans) && q.pairs.every(function(p,i){ return ans[i]===p.correct; });
+  return false;
+}
+
+/* ══════════════════════════════════════════
+   ATTACH LISTENERS
+══════════════════════════════════════════ */
+function attachListeners(sl){
+  if(sl.type==='exercise') attachExListeners(sl);
+  if(sl.type==='exam')     attachExamListeners(sl);
+  if(sl.type==='results'){
+    var pb = document.getElementById('btn-print');
+    var rb = document.getElementById('btn-restart');
+    if(pb) pb.addEventListener('click', doPrint);
+    if(rb) rb.addEventListener('click', doRestart);
+  }
+}
+
+function attachExListeners(sl){
+  function markDone(ok, msg){
+    answered[cur] = true;
+    var fb = document.getElementById('exfb');
+    if(fb){ fb.textContent = msg; fb.className = 'ex-fb ' + (ok ? 'ok' : 'bad'); }
+    document.getElementById('btn-next').disabled = false;
+  }
+  function showRevealButton(revealFn){
+    var fb = document.getElementById('exfb');
+    if(fb){
+      fb.className = 'ex-fb retry';
+      fb.innerHTML = 'לא נכון בפעם השנייה. <button class="btn-reveal" id="btn-reveal">🔍 הצגת פתרון התשובות</button>';
+      document.getElementById('btn-reveal').addEventListener('click', function(){ revealFn(); });
+    }
+  }
+  function showRetry(msg){
+    if(!attempts[cur]) attempts[cur] = 0;
+    attempts[cur]++;
+    var fb = document.getElementById('exfb');
+    if(fb){ fb.textContent = msg + ' — נסה שוב!'; fb.className = 'ex-fb retry'; }
+    var badge = document.querySelector('.attempt-badge');
+    if(badge){ badge.textContent = 'ניסיון שני'; badge.className = 'attempt-badge attempt-2'; }
+  }
+  if(sl.exType==='mc'){
+    document.querySelectorAll('.opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(answered[cur]) return;
+        if(btn.disabled) return;
+        var i = parseInt(btn.dataset.i);
+        var ok = (i === sl.correct);
+        if(ok){
+          document.querySelectorAll('.opt').forEach(function(b,j){ b.disabled=true; if(j===sl.correct) b.classList.add('ok'); });
+          markDone(true, 'נכון מאוד!');
+        } else if((attempts[cur]||0) === 0){
+          btn.classList.add('tried'); btn.disabled=true;
+          showRetry('לא נכון');
+        } else {
+          document.querySelectorAll('.opt').forEach(function(b){ b.disabled=true; });
+          btn.classList.add('bad');
+          showRevealButton(function(){
+            document.querySelectorAll('.opt').forEach(function(b,j){
+              if(j===sl.correct) b.classList.add('ok');
+              else if(!b.classList.contains('tried')) b.classList.add('bad');
+            });
+            markDone(false, 'התשובה הנכונה מסומנת בירוק.');
+          });
+        }
+      });
+    });
+  } else if(sl.exType==='tf'){
+    document.querySelectorAll('.tf-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(answered[cur]) return;
+        if(btn.disabled) return;
+        var v = (btn.dataset.v==='true');
+        var ok = (v === sl.correct);
+        if(ok){
+          document.querySelectorAll('.tf-btn').forEach(function(b){
+            b.disabled=true; b.classList.add((b.dataset.v==='true')===sl.correct?'ok':'bad');
+          });
+          markDone(true, 'נכון!');
+        } else if((attempts[cur]||0) === 0){
+          btn.classList.add('bad'); btn.disabled=true;
+          showRetry('לא נכון');
+        } else {
+          document.querySelectorAll('.tf-btn').forEach(function(b){ b.disabled=true; });
+          showRevealButton(function(){
+            document.querySelectorAll('.tf-btn').forEach(function(b){
+              b.classList.add((b.dataset.v==='true')===sl.correct?'ok':'bad');
+            });
+            markDone(false, 'התשובה: '+(sl.correct?'נכון':'לא נכון'));
+          });
+        }
+      });
+    });
+  } else if(sl.exType==='match'){
+    var chk2 = document.getElementById('chk');
+    if(chk2) chk2.addEventListener('click', function(){
+      if(answered[cur]) return;
+      var allOk = true;
+      sl.pairs.forEach(function(p,i){
+        var sel = document.getElementById('ms'+i);
+        if(!sel) return;
+        if(sel.value===p.correct){ sel.style.borderColor='#22c55e'; sel.style.background='#f0fdf4'; }
+        else{ sel.style.borderColor='#ef4444'; sel.style.background='#fef2f2'; allOk=false; }
+      });
+      if(allOk){
+        sl.pairs.forEach(function(_,i){ var s=document.getElementById('ms'+i); if(s) s.disabled=true; });
+        chk2.disabled=true;
+        markDone(true, 'כל ההתאמות נכונות!');
+      } else if((attempts[cur]||0) === 0){
+        showRetry('חלק מההתאמות שגויות');
+        sl.pairs.forEach(function(_,i){
+          var sel = document.getElementById('ms'+i);
+          if(sel){ sel.style.borderColor=''; sel.style.background=''; }
+        });
+      } else {
+        sl.pairs.forEach(function(_,i){ var s=document.getElementById('ms'+i); if(s) s.disabled=true; });
+        chk2.disabled=true;
+        showRevealButton(function(){
+          sl.pairs.forEach(function(p,i){
+            var s=document.getElementById('ms'+i);
+            if(s){ s.value=p.correct; s.style.borderColor='#22c55e'; s.style.background='#f0fdf4'; }
+          });
+          markDone(false, 'ההתאמות הנכונות מוצגות.');
+        });
+      }
+    });
+  }
+}
+
+function attachExamListeners(sl){
+  if(sl.exType==='mc'){
+    document.querySelectorAll('.eopt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.eopt').forEach(function(b){ b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        examAns[sl.id] = parseInt(btn.dataset.i);
+      });
+    });
+    if(examAns[sl.id]!==undefined){
+      var prevSel = document.querySelectorAll('.eopt')[examAns[sl.id]];
+      if(prevSel) prevSel.classList.add('sel');
+    }
+  } else if(sl.exType==='tf'){
+    document.querySelectorAll('.etf').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.etf').forEach(function(b){ b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        examAns[sl.id] = btn.dataset.v==='true';
+      });
+    });
+    if(examAns[sl.id]!==undefined){
+      document.querySelectorAll('.etf').forEach(function(b){
+        if((b.dataset.v==='true')===examAns[sl.id]) b.classList.add('sel');
+      });
+    }
+  } else if(sl.exType==='match'){
+    sl.pairs.forEach(function(p,i){
+      var sel = document.getElementById('ems'+i);
+      if(!sel) return;
+      if(examAns[sl.id] && examAns[sl.id][i]) sel.value=examAns[sl.id][i];
+      sel.addEventListener('change', function(){
+        if(!examAns[sl.id]) examAns[sl.id]=[];
+        sl.pairs.forEach(function(_,j){
+          var s2=document.getElementById('ems'+j);
+          if(s2) examAns[sl.id][j]=s2.value;
+        });
+      });
+    });
+  }
+}
+
+/* ══════════════════════════════════════════
+   PRINT / RESTART
+══════════════════════════════════════════ */
+function doPrint(){
+  /* Hide everything except the cert-box, then print */
+  var toHide = document.querySelectorAll('.results-hero,.results-review,.print-row');
+  toHide.forEach(function(el){ el.style.display='none'; });
+  window.print();
+  toHide.forEach(function(el){ el.style.display=''; });
+}
+function doRestart(){
+  try{ sessionStorage.clear(); }catch(e){}
+  cur=0; maxReached=0; name=''; demoMode=false; answered={}; attempts={}; examAns={}; examOptOrder={};
+  document.getElementById('app-shell').classList.remove('on');
+  document.getElementById('login-screen').style.display='';
+  document.getElementById('inp-name').value='';
+}
+
+/* ══════════════════════════════════════════
+   EXAM QUESTIONS HELPER
+══════════════════════════════════════════ */
+function examQuestions(){ return SLIDES.filter(function(s){ return s.type==='exam'; }); }
+
+/* ══════════════════════════════════════════
+   BUILD SLIDES
+══════════════════════════════════════════ */
+function buildSlides(){
+  var S = [];
+
+  /* ─── CHAPTER 1 ─────────────────────── */
+  S.push({type:'intro',chapter:1,icon:'📋',chNum:1,title:'מבוא: סוגי דו"חות התנועה',desc:'הכרת 5 סוגי הדו"חות, מאפייניהם ומספר הדו"חות בכל פנקס'});
+
+  S.push({type:'content',chapter:1,html:
+    '<div class="s-card"><h2>📄 דו"חות התנועה – מראה הטפסים</h2>' +
+    '<p style="font-size:.9rem;color:#4a5568;margin-bottom:.5rem">להלן 5 הסוגים כפי שנראים בשטח. לחץ על תמונה לצפייה מוגדלת.</p>' +
+    '<div class="report-gallery">' +
+      '<div class="rg-item"><img class="rg-img" src="images/form_azara.png" alt="דו״ח התראה"><div class="rg-caption"><strong>התראה (אזהרה)</strong>ללא קנס · ללא נקודות</div></div>' +
+      '<div class="rg-item"><img class="rg-img" src="images/form_bm.png" alt="דו״ח ברירת משפט"><div class="rg-caption"><strong>ברירת משפט (ב״מ)</strong>קנס כספי · ערר דרך מפנ״א</div></div>' +
+      '<div class="rg-item"><img class="rg-img" src="images/pptx4_img6.png" alt="הפרה מנהלית"><div class="rg-caption"><strong>הפרה מנהלית</strong>מסלול חדש · מ-08.02.2026</div></div>' +
+      '<div class="rg-item"><img class="rg-img" src="images/pptx4_img4.png" alt="הזמנה לדין"><div class="rg-caption"><strong>הזמנה לדין</strong>עבירות חמורות · בית משפט</div></div>' +
+      '<div class="rg-item"><img class="rg-img" src="images/pptx4_img14.png" alt="דו״ח פנימי" style="clip-path:inset(4%)"><div class="rg-caption"><strong>פנימי (לבן)</strong>לחסינים ושוטרים</div></div>' +
+    '</div>' +
+    '<div class="bx bx-i" style="margin-top:.25rem">שימו לב: כל הטפסים נושאים מספר סידורי. הפנקס שייך לשוטר – לא לעמדה.</div>' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:1,html:
+    '<div class="s-card"><h2>📋 5 סוגי דו"חות התנועה</h2>' +
+    '<table class="tbl"><thead><tr><th>סוג הדו"ח</th><th>עיקרי</th><th>דו"חות בפנקס</th></tr></thead><tbody>' +
+    '<tr><td><strong>התראה (אזהרה)</strong></td><td>ללא קנס, ללא נקודות – להקלה על נהג שאינו עבריין חוזר</td><td><strong>20</strong></td></tr>' +
+    '<tr><td><strong>ברירת משפט (ב"מ)</strong></td><td>קנס כספי – הנהג משלם (= הודאה) או מבקש הישפט</td><td><strong>20</strong></td></tr>' +
+    '<tr><td><strong>הפרת תעבורה מנהלית</strong></td><td>מסלול חדש מ-08.02.2026. ערעור לבית דין מנהלי</td><td><strong>20</strong></td></tr>' +
+    '<tr><td><strong>הזמנה לדין</strong></td><td>עבירות חמורות שאינן עבירות קנס – דיון בבית משפט</td><td><strong>10</strong></td></tr>' +
+    '<tr><td><strong>פנימי (לבן)</strong></td><td>לחסינים, שוטרים, רכב שלא נעצר – לא נמסר לנהג</td><td>—</td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-i">שימו לב: <strong>הזמנה לדין</strong> – 10 דו"חות בפנקס בלבד, לעומת 20 בשאר הסוגים.</div></div>'
+  });
+
+  S.push({type:'content',chapter:1,html:
+    '<div class="s-card"><h2>📖 מהי חנ"א?</h2>' +
+    '<div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">' +
+    '<div style="flex:1;min-width:200px">' +
+    '<p><strong>חנ"א = חוברת נוסחי אישום</strong> – חוברת הסמלים והקנסות המצורפת לפנקס הדו"חות.</p>' +
+    '<p>כוללת: קודי עבירות, סכומי קנסות, סמלי בתי משפט וסמלי יחידות תנועה.</p>' +
+    '<div class="bx bx-i">כל שוטר תנועה חייב להכיר את החנ"א ולהשתמש בה בעת רישום כל דו"ח.</div>' +
+    '<h3>🔑 נקודות מפתח לזכור</h3><ul>' +
+    '<li>כל דו"ח מזוהה לפי <strong>סוגו</strong> (אזהרה / ב"מ / הפרה מנהלית / הזמנה לדין / פנימי)</li>' +
+    '<li>מספר הדו"חות בפנקס קובע את <strong>תדירות האספקה</strong></li>' +
+    '<li>הפנקס שייך לשוטר – <strong>לא לעמדה</strong></li>' +
+    '</ul></div>' +
+    '<img src="images/chna_cover.png" alt="חוברת נוסחי אישום – חנ\"א" style="width:140px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.18);flex-shrink:0;object-fit:contain" onerror="this.style.display=\'none\'">' +
+    '</div>' +
+    '</div>'
+  });
+
+  S.push({type:'exercise',chapter:1,exTitle:'שאלה 1 מתוך 2 – בחירה מרובה',q:'איזה מסמך הוא ה"חנ"א"?',exType:'mc',correct:1,
+    opts:['חוזר רשמי של אגף התנועה','חוברת ניתוב ואכיפה – חוברת הסמלים והקנסות','חוק עבירות התעבורה','רשימת עבירות אסורות לאזהרה']
+  });
+  S.push({type:'exercise',chapter:1,exTitle:'שאלה 2 מתוך 2 – נכון / לא נכון',q:'לכל סוג דו"ח יש מספר שונה של דו"חות בפנקס.',exType:'tf',correct:true,
+    hint:'אזהרה – 20, ב"מ – 20, הפרה מנהלית – 20, הזמנה לדין – 10.'
+  });
+
+  /* ─── CHAPTER 2 ─────────────────────── */
+  S.push({type:'intro',chapter:2,icon:'⚠️',chNum:2,title:'דו"ח התראה (אזהרה)',desc:'תנאים מצטברים, מקרים מיוחדים ורשימת העבירות האסורות'});
+
+  S.push({type:'content',chapter:2,html:
+    '<div class="s-card"><h2>⚠️ מהו דו"ח אזהרה?</h2>' +
+    '<p>דו"ח אזהרה (התראה) ניתן <strong>להקלה</strong> על משתמש דרך שאינו עבריין חוזר.</p>' +
+    '<div class="bx bx-s">✓ <strong>ללא קנס</strong> ✓ <strong>ללא נקודות</strong> ✓ <strong>20 דו"חות</strong> בפנקס</div>' +
+    '<h3>5 תנאים מצטברים (כולם חייבים להתקיים)</h3><ol>' +
+    '<li>העבירה <strong>אינה ברשימת העבירות האסורות</strong></li>' +
+    '<li>הנהג <strong>מודה בביצוע העבירה</strong></li>' +
+    '<li>ותק נהיגה <strong>7 שנים לפחות</strong> (עדכון 08.09.2025)</li>' +
+    '<li>ב-5 השנים האחרונות – <strong>אין אזהרה או הרשעה</strong> בעבירת תנועה</li>' +
+    '<li>נסיבות העבירה <strong>אינן חמורות</strong></li></ol>' +
+    '<div class="bx bx-w">⚠️ לאחר ההחלטה, חובה <strong>לבדוק במערכות המשטרתיות</strong> ולציין בנסיבות: "נבדק במערכות משטרתיות ועומד בקריטריונים – זכאי לדו"ח אזהרה".</div></div>'
+  });
+
+  S.push({type:'content',chapter:2,html:
+    '<div class="s-card"><h2>📄 דו"ח אזהרה</h2>' +
+    '<p>להלן דוגמה לטופס דו"ח האזהרה (התראה).</p>' +
+    '<img src="images/form_azara.png" alt="טופס דו"ח אזהרה" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:2,html:
+    '<div class="s-card"><h2>📌 מקרים מיוחדים</h2>' +
+    '<div class="bx bx-s">✓ הולך רגל / נוסע אופניים – זכאי לאזהרה <strong>גם ללא רישיון</strong></div>' +
+    '<h3>🚫 מקרים שבהם אין לרשום דו"ח אזהרה</h3><ul>' +
+    '<li><strong>לא</strong> ב"הדבקות" לרכב חונה</li>' +
+    '<li><strong>לא</strong> למי שאינו <strong>אזרח ישראל</strong></li>' +
+    '<li><strong>לא</strong> לרוכב אופניים חשמליים / גלגינוע שלא עבר הכשרה</li>' +
+    '</ul></div>'
+  });
+
+  S.push({type:'content',chapter:2,html:
+    '<div class="s-card"><div class="fbd"><h3>⛔ עבירות שאסור לרשום בהן אזהרה – בשום מקרה!</h3><ul>' +
+    '<li>שימוש בטלפון נייד (7141, 7140/7257)</li>' +
+    '<li>אור אדום (6701, 6528/7255, 9680)</li>' +
+    '<li>אי מתן זכות קדימה להולך רגל / אמז"ק (7159)</li>' +
+    '<li>נהיגה בשול (6680, 5441/7256)</li>' +
+    '<li>עקיפה לפני מעבר חצייה (6201)</li>' +
+    '<li>עקיפת רכב שעצר לפני מעבר חצייה (6105)</li>' +
+    '<li>עקיפת רכב שעצר לפני מפגש מסילת ברזל (6106)</li>' +
+    '<li>נהיגת רכב שנשמט ממנו מטען (3827)</li>' +
+    '<li>נהיגה ברכב לא תקין שהוחלט לאסור שימוש (6055)</li>' +
+    '<li>חניית נכה (7346, 7339, 7324, 5920)</li>' +
+    '<li>הובלת מכולה ללא התקני חיבור (5663)</li>' +
+    '<li>עבירות מהירות בדרגת קנס 1,500 ₪ ומעלה</li>' +
+    '<li>קיפוח זכות (3511/7258)</li>' +
+    '<li>נהיגה על אי תנועה (5512/7259)</li>' +
+    '<li>חציית שטח הפרדה (5952)</li>' +
+    '</ul></div></div>'
+  });
+
+  S.push({type:'exercise',chapter:2,exTitle:'שאלה 1 מתוך 3 – בחירה מרובה',q:'נהג עם 6 שנות ותק נהיגה נעצר בעבירה קלה ומודה בה. האם זכאי לאזהרה?',exType:'mc',correct:1,
+    opts:['כן, כי הוא מודה','לא, כי אין לו 7 שנות ותק','כן, אם אין לו עבר','תלוי בחומרת העבירה']
+  });
+  S.push({type:'exercise',chapter:2,exTitle:'שאלה 2 מתוך 3 – נכון / לא נכון',q:'ניתן לרשום דו"ח אזהרה לנהג שתפס באור אדום, אם הוא מודה ויש לו 10 שנות ותק.',exType:'tf',correct:false,
+    hint:'אור אדום נמצאת ברשימת האסורות – לא ניתן בשום מקרה.'
+  });
+  S.push({type:'exercise',chapter:2,exTitle:'שאלה 3 מתוך 3 – בחירה מרובה',q:'לאחר שהחלטת לרשום אזהרה, מה חובה לעשות לפני הרישום?',exType:'mc',correct:1,
+    opts:['לשאול את הנהג אם קיבל אזהרה בעבר','לבדוק במערכות המשטרתיות ולציין שעומד בקריטריונים','לצלם את רישיון הנהיגה','לרשום פרטים מורחבים בשדה הנסיבות בלבד']
+  });
+
+  /* ─── CHAPTER 3 ─────────────────────── */
+  S.push({type:'intro',chapter:3,icon:'⚖️',chNum:3,title:'דו"ח ברירת משפט',desc:'קנס כספי, הליך ערר ומשמעות התשלום'});
+
+  S.push({type:'content',chapter:3,html:
+    '<div class="s-card"><h2>⚖️ מהו דו"ח ברירת משפט?</h2>' +
+    '<p>ניתן לנהג שביצע עבירה שהעונש עליה הוא <strong>קנס כספי על פי צו עבירות הקנס</strong>.</p>' +
+    '<div class="bx bx-i">בכל פנקס: <strong>20 דו"חות</strong></div>' +
+    '<h3>שתי אפשרויות לנהג</h3>' +
+    '<table class="tbl"><thead><tr><th>אפשרות</th><th>המשמעות</th></tr></thead><tbody>' +
+    '<tr><td>💳 <strong>לשלם את הקנס</strong></td><td>= <strong>הודאה באשמה</strong> – נחשב מורשע</td></tr>' +
+    '<tr><td>🏛️ <strong>לבקש להישפט</strong></td><td>הגשת בקשה דרך <strong>מפנ"א</strong> – לא ישירות לבית משפט</td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-w">⚠️ <strong>תשלום הקנס = הרשעה לכל דבר!</strong> חשוב להבהיר זאת לנהג.</div></div>'
+  });
+
+  S.push({type:'content',chapter:3,html:
+    '<div class="s-card"><h2>📬 הליך ערר על דו"ח ב"מ (בית משפט)</h2>' +
+    '<table class="tbl"><thead><tr><th>סוג הפנייה</th><th>לאן פונים</th></tr></thead><tbody>' +
+    '<tr><td>השגה (ביטול / הסבה / המרה)</td><td>מדור פניות נהגים ארצי – <strong>מפנ"א</strong></td></tr>' +
+    '<tr><td>בקשה להישפט</td><td>הגשת בקשה דרך <strong>מפנ"א</strong> – לא ישירות לבית משפט</td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-i">מפנ"א = מדור פניות נהגים ארצי – נקודת הכניסה לכל ערר על דו"ח ב"מ.</div>' +
+    '<h3 style="margin-top:.75rem">🌐 הגשת פנייה למפנ"א</h3>' +
+    '<img src="images/mifna_website.png" alt="אתר מפנ"א להגשת פנייה" class="sl-img" onerror="this.style.display=\'none\'">' +
+    '</div>'
+  });
+
+  S.push({type:'exercise',chapter:3,exTitle:'שאלה 1 מתוך 2 – בחירה מרובה',q:'נהג שקיבל דו"ח ב"מ ורוצה לערור – מה עליו לעשות?',exType:'mc',correct:2,
+    opts:['לפנות ישירות לבית דין מנהלי','לשלם ולהיחשב מורשע','להגיש בקשה להישפט דרך מפנ"א','להגיש ערר מקוון ישירות']
+  });
+  S.push({type:'exercise',chapter:3,exTitle:'שאלה 2 מתוך 2 – נכון / לא נכון',q:'תשלום דו"ח ברירת משפט נחשב כהודאה באשמה.',exType:'tf',correct:true});
+
+  /* ─── CHAPTER 4 ─────────────────────── */
+  S.push({type:'intro',chapter:4,icon:'🏛️',chNum:4,title:'דו"ח הפרת תעבורה מנהלית',desc:'הרפורמה, שלבי יישום, כפל קנס והליך ערעור'});
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>🏛️ הרפורמה: חוק הפרות מנהליות תשפ"ד-2024</h2>' +
+    '<p>החוק מעביר עבירות תנועה מהמסלול <strong>הפלילי</strong> למסלול <strong>מנהלי</strong>.</p>' +
+    '<div class="bx bx-s">תחילת תוקף: <strong>08.02.2026</strong></div>' +
+    '<h3>יתרונות הרפורמה</h3><ul>' +
+    '<li>אכיפה <strong>מהירה</strong> יותר</li>' +
+    '<li>הפחתת עומס מ<strong>בתי המשפט</strong></li>' +
+    '<li>חיזוק <strong>ההרתעה</strong></li>' +
+    '</ul>' +
+    '<h3 style="margin-top:.75rem">📖 ספר החוקים – פרסום החוק</h3>' +
+    '<img src="images/sefer_hukkim.png" alt="ספר החוקים 3278 – חוק הפרות מנהליות תשפ״ד-2024" class="sl-img" style="max-height:220px;object-fit:contain" onerror="this.style.display=\'none\'">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>📅 שלבי יישום</h2>' +
+    '<table class="tbl"><thead><tr><th>שלב</th><th>תאריך</th><th>מה משתנה</th></tr></thead><tbody>' +
+    '<tr><td><strong>שלב א&#39;</strong></td><td>08.02.2026</td><td>עבירות קנס <strong>עד 500 ₪</strong> ←הפרות מנהליות</td></tr>' +
+    '<tr><td><strong>שלב ב&#39;</strong></td><td>09.08.2026</td><td><strong>כל</strong> עבירות הקנס ←הפרות מנהליות</td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-w"><strong>חריגים בשלב א&#39; – נשארים ב"מ:</strong><br>• עבירות מהירות (בכל סכום)<br>• תחבורה קלה ללא רישום (7351, 7352)<br>• הרכבת אנשים על אופניים (7053, 7005, 7052, 7004)</div></div>'
+  });
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>✕2 מנגנון כפל קנס</h2>' +
+    '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">' +
+    '<div style="font-size:3.5rem;font-weight:900;color:var(--err);line-height:1;flex-shrink:0">×2</div>' +
+    '<p style="margin:0"><strong>3 תנאים מצטברים לכפל קנס:</strong></p></div><ol>' +
+    '<li>3 הרשעות / הפרות קודמות ב-<strong>3 השנים האחרונות</strong></li>' +
+    '<li>הקנס הנוכחי <strong>500 ₪ ומעלה</strong></li>' +
+    '<li>ההפרה <strong>אינה עבירת חניה</strong></li></ol>' +
+    '<div class="bx bx-s">✓ כל 3 התנאים התקיימו ←<strong>הקנס מוכפל</strong></div>' +
+    '<div class="bx bx-e">⚠️ <strong>חשוב:</strong> אל תאמר לאזרח את סכום הקנס לפני שבדקת במערכות!</div>' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>📄 טופס הפרת תעבורה מנהלית</h2>' +
+    '<p>להלן דוגמה לטופס הדו"ח החדש – שימו לב לשדות המיוחדים לעומת הב"מ הישן. <strong>(שימו לב לסעיף ה. תשלום הקנס)</strong></p>' +
+    '<img src="images/pptx4_img6.png" alt="טופס הפרה מנהלית" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>🔄 תרשים זרימה – מענה להפרה מנהלית</h2>' +
+    '<div class="flow-wrap">' +
+      '<div class="flow-node start">הנהג קיבל הודעת הפרה מנהלית</div>' +
+      '<div class="flow-arrow"></div>' +
+      '<div class="flow-node decision">בחירת מסלול תגובה</div>' +
+      '<div class="flow-arrow" style="visibility:hidden"></div>' +
+      '<div class="flow-split">' +
+        '<div class="flow-branch">' +
+          '<div class="flow-branch-lbl">מסלול א׳</div>' +
+          '<div class="flow-node action">תשלום הקנס<br><small>בתוך 90 יום</small></div>' +
+          '<div class="flow-arrow"></div>' +
+          '<div class="flow-node ok">ההפרה נסגרת ✓</div>' +
+        '</div>' +
+        '<div class="flow-branch">' +
+          '<div class="flow-branch-lbl">מסלול ב׳</div>' +
+          '<div class="flow-node action">השגה דרך מפנ"א<br><small>בתוך 30 יום</small></div>' +
+          '<div class="flow-arrow"></div>' +
+          '<div class="flow-node decision">תוצאת ההשגה</div>' +
+          '<div class="flow-arrow" style="visibility:hidden"></div>' +
+          '<div style="display:flex;gap:.75rem;width:100%">' +
+            '<div class="flow-branch" style="flex:1">' +
+              '<div class="flow-branch-lbl">מתקבלת</div>' +
+              '<div class="flow-node ok" style="font-size:.78rem">ביטול / הסבה ✓</div>' +
+            '</div>' +
+            '<div class="flow-branch" style="flex:1">' +
+              '<div class="flow-branch-lbl">נדחית</div>' +
+              '<div class="flow-node action" style="font-size:.78rem">ערר לבית דין<br>מנהלי לתעבורה</div>' +
+              '<div class="flow-arrow"></div>' +
+              '<div class="flow-node ok" style="font-size:.78rem">פסיקת בית הדין</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flow-branch">' +
+          '<div class="flow-branch-lbl">מסלול ג׳</div>' +
+          '<div class="flow-node action">אי תשלום<br>ואי טיפול</div>' +
+          '<div class="flow-arrow"></div>' +
+          '<div class="flow-node warn">גביה בכפייה ⚠️</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:4,html:
+    '<div class="s-card"><h2>📬 הליך ערעור – הפרה מנהלית</h2>' +
+    '<table class="tbl"><thead><tr><th>סוג הפנייה</th><th>לאן פונים</th></tr></thead><tbody>' +
+    '<tr><td>השגה (ביטול / הסבה / המרה לאזהרה)</td><td><strong>מפנ"א</strong> – כרגיל</td></tr>' +
+    '<tr><td>ערעור על <u>עצם ההפרה</u></td><td><strong>בית דין מנהלי לתעבורה – ישירות, מקוון</strong></td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-i">הבדל מהותי: ב"מ ←בקשה להישפט דרך <strong>מפנ"א</strong>. הפרה מנהלית ←ערר <strong>ישירות</strong> לבית דין מנהלי.</div>' +
+    '<h3>שיטת הניקוד</h3>' +
+    '<div class="bx bx-w">בשלב זה: <strong>אין ניקוד</strong> בהפרות מנהליות. שדה הניקוד – <strong>להשאיר ריק</strong>. בדו"חות ב"מ והזמנות לדין – הניקוד ממשיך כרגיל.</div></div>'
+  });
+
+  S.push({type:'exercise',chapter:4,exTitle:'שאלה 1 מתוך 3 – בחירה מרובה',q:'אזרח קיבל דו"ח הפרה מנהלית ורוצה לערור. לאן יפנה?',exType:'mc',correct:2,
+    opts:['לבית משפט לתעבורה','למפנ"א','לבית דין מנהלי לתעבורה – ישירות, הגשה מקוונת','לאגף התנועה']
+  });
+  S.push({type:'exercise',chapter:4,exTitle:'שאלה 2 מתוך 3 – נכון / לא נכון',q:'מתאריך 08.02.2026, עבירות מהירות הפכו להפרות תעבורה מנהליות.',exType:'tf',correct:false,
+    hint:'עבירות מהירות הן חריג – נשארות ב"מ גם בשלב א\'.'
+  });
+  S.push({type:'exercise',chapter:4,exTitle:'שאלה 3 מתוך 3 – התאמה',q:'התאם בין המסלול לסוג הדו"ח:',exType:'match',
+    pairs:[
+      {lbl:'בקשה להישפט דרך מפנ"א:',correct:'ברירת משפט (ב"מ)'},
+      {lbl:'ערר ישיר לבית דין מנהלי:',correct:'הפרת תעבורה מנהלית'},
+      {lbl:'פנייה למפנ"א לביטול / הסבה:',correct:'השגה על הפרה מנהלית'}
+    ],
+    matchOpts:['ברירת משפט (ב"מ)','הפרת תעבורה מנהלית','השגה על הפרה מנהלית']
+  });
+
+  /* ─── CHAPTER 5 ─────────────────────── */
+  S.push({type:'intro',chapter:5,icon:'📜',chNum:5,title:'הזמנה לדין ודו"ח פנימי',desc:'עבירות חמורות, שופטים, דיפלומטים ורכב שלא נעצר'});
+
+  S.push({type:'content',chapter:5,html:
+    '<div class="s-card"><h2>📜 דו"ח הזמנה לדין</h2>' +
+    '<p>ניתן לנהג שביצע <strong>עבירה חמורה</strong> שלא הוגדרה כעבירת קנס.</p>' +
+    '<div class="bx bx-i">בכל פנקס: <strong>10 דו"חות</strong> (לעומת 20 בב"מ / אזהרה)</div>' +
+    '<h3>מה כולל הדו"ח?</h3><ul>' +
+    '<li>תאריך + מיקום + <strong>שעת דיון</strong> בבית המשפט</li>' +
+    '<li>הנהג יכול לרשום <strong>"הודאת נאשם"</strong> ולא להגיע לדיון</li>' +
+    '</ul></div>'
+  });
+
+  S.push({type:'content',chapter:5,html:
+    '<div class="s-card"><h2>📄 טופס הזמנה לדין</h2>' +
+    '<p>לפניכם דוגמה לטופס הזמנה לדין וכתב האישום.</p>' +
+    '<img src="images/pptx4_img4.png" alt="טופס הזמנה לדין" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:5,html:
+    '<div class="s-card"><h2>🔲 דו"ח פנימי (לבן) – מתי?</h2>' +
+    '<ol>' +
+    '<li>הנהג <strong>חסין</strong> (דיפלומט / קונסול)</li>' +
+    '<li><strong>שופט</strong> – רק בעבירות מסוג הזמנה לדין</li>' +
+    '<li><strong>שוטר</strong> ברכב משטרתי</li>' +
+    '<li>הרכב <strong>לא נעצר</strong> ויש מספר רישוי (בעבירות חמורות בלבד)</li>' +
+    '<li>לשוטר <strong>אין דו"חות תנועה</strong> (בלש / חוקר / שח"מ)</li>' +
+    '<li>העבירה <strong>לא נמצאת בחנ"א</strong></li>' +
+    '</ol>' +
+    '<div class="bx bx-e"><strong>חשוב:</strong> דו"ח פנימי = מקור + העתק.<br>' +
+    '❌ לא מוסרים העתק לנהג!<br>' +
+    '✓ מועבר ליחידת תנועה. הנהג מקבל דו"ח מודפס <strong>בדואר</strong>.</div></div>'
+  });
+
+  S.push({type:'content',chapter:5,html:
+    '<div class="s-card"><h2>📄 טופס דו"ח פנימי לרישום עבירות</h2>' +
+    '<p>לפניכם דוגמה לטופס הדו"ח הפנימי – שימו לב: <strong>אין מסירת עותק לנהג</strong>.</p>' +
+    '<img src="images/pptx4_img14.png" alt="טופס דו"ח פנימי" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'exercise',chapter:5,exTitle:'שאלה 1 מתוך 2 – בחירה מרובה',q:'נהג דיפלומט ביצע עבירת אור אדום. איזה דו"ח ירשום השוטר?',exType:'mc',correct:2,
+    opts:['ברירת משפט','הזמנה לדין','פנימי (לבן)','אזהרה']
+  });
+  S.push({type:'exercise',chapter:5,exTitle:'שאלה 2 מתוך 2 – בחירה מרובה',q:'כמה דו"חות הזמנה לדין יש בכל פנקס?',exType:'mc',correct:1,
+    opts:['5 דו"חות','10 דו"חות','15 דו"חות','20 דו"חות']
+  });
+
+  /* ─── CHAPTER 6 ─────────────────────── */
+  S.push({type:'intro',chapter:6,icon:'📊',chNum:6,title:'טבלאות עזר ורישום שני דו"חות',desc:'טבלת סמלים, טבלת בתי משפט וכללי רישום שני דו"חות'});
+
+  S.push({type:'content',chapter:6,html:
+    '<div class="s-card"><h2>🎨 טבלת סמלים לסוגי רכב וצבעים</h2>' +
+    '<p>הטבלה מצורפת לכל פנקס דו"חות. <strong>אין צורך לרשום</strong> את קודי הסמלים והצבעים – השתמש בחנ"א.</p>' +
+    '<img src="images/pptx4_img15.png" alt="טבלת סמלים וצבעי רכב" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:6,html:
+    '<div class="s-card"><h2>🏛️ שמות יחידות התנועה, בתי המשפט וסמליהם</h2>' +
+    '<p>לפי <strong>אזור ביצוע העבירה</strong> – רשום את הסמל המתאים בדו"ח.</p>' +
+    '<img src="images/pptx4_img16.png" alt="טבלת יחידות תנועה ובתי משפט" class="sl-img">' +
+    '</div>'
+  });
+
+  S.push({type:'content',chapter:6,html:
+    '<div class="s-card"><h2>📑 כללי רישום שני דו"חות לנהג</h2>' +
+    '<table class="tbl"><thead><tr><th>מצב</th><th>הכלל</th></tr></thead><tbody>' +
+    '<tr><td>שתי הזמנות לדין</td><td>🔵 <strong>דו"ח אחד</strong> עם 2 סעיפים, פירוט בנסיבות</td></tr>' +
+    '<tr><td>ב"מ + הזמנה לדין</td><td>🟠 <strong>שני דו"חות נפרדים</strong> עם הפניה הדדית</td></tr>' +
+    '<tr><td>שתי ב"מ</td><td>🟠 <strong>שני דו"חות נפרדים</strong> עם הפניה הדדית</td></tr>' +
+    '</tbody></table>' +
+    '<div class="bx bx-i">כלל זהב: שתי הזמנות לדין = <strong>דו"ח אחד עם שני סעיפים</strong>. כל שילוב אחר = <strong>שני דו"חות נפרדים</strong>.</div></div>'
+  });
+
+  S.push({type:'exercise',chapter:6,exTitle:'שאלה 1 מתוך 2 – נכון / לא נכון',q:'נהג שביצע שתי עבירות הזמנה לדין יקבל שני דו"חות נפרדים.',exType:'tf',correct:false,
+    hint:'שתי הזמנות לדין = דו"ח אחד עם שני סעיפים.'
+  });
+  S.push({type:'exercise',chapter:6,exTitle:'שאלה 2 מתוך 2 – התאמה',q:'התאם בין המצב לכלל הרישום:',exType:'match',
+    pairs:[
+      {lbl:'ב"מ + הזמנה לדין:',correct:'שני דו"חות נפרדים'},
+      {lbl:'שתי הזמנות לדין:',correct:'דו"ח אחד עם שני סעיפים'},
+      {lbl:'שתי עבירות ב"מ:',correct:'שני דו"חות נפרדים'}
+    ],
+    matchOpts:['שני דו"חות נפרדים','דו"ח אחד עם שני סעיפים']
+  });
+
+  /* ─── SUMMARY ────────────────────────── */
+  S.push({type:'summary',chapter:99});
+
+  /* ─── EXAM (8 questions – shuffled on first render) ─ */
+  var examQ = [
+    {type:'exam',chapter:99,id:'eq1',exType:'mc',
+      q:'נהג עם ותק של 8 שנים, ללא עבר בשלוש השנים האחרונות, עבר עבירת שימוש בטלפון נייד ומודה בה. האם זכאי לאזהרה?',
+      opts:['כן, כי עומד בכל תנאי הותק והעבר','לא, כי עבירת טלפון נייד אסורה לאזהרה בכל מקרה','כן, אם מדובר בפעם הראשונה','תלוי בהחלטת השוטר'],
+      correct:1,explain:'עבירת טלפון נייד נמצאת ברשימת האסורות – לא ניתן בשום מקרה.'
+    },
+    {type:'exam',chapter:99,id:'eq2',exType:'tf',
+      q:'מתאריך 08.02.2026, דו"ח הפרת תעבורה מנהלית כולל ניקוד כמו ברירת משפט רגילה.',
+      correct:false,explain:'לא נכון. אין ניקוד בהפרות מנהליות בשלב זה.'
+    },
+    {type:'exam',chapter:99,id:'eq3',exType:'mc',
+      q:'לנהג 3 הרשעות בשלוש השנים האחרונות. הוא ביצע הפרה חדשה בקנס 400 ₪. האם יחול כפל קנס?',
+      opts:['כן, כי ביצע 3 הפרות קודמות','לא, כי הקנס הנוכחי נמוך מ-500 ₪','כן, כי הוא רצידיביסט','תלוי בסוג העבירה'],
+      correct:1,explain:'כפל קנס מחייב קנס נוכחי 500 ₪ ומעלה. 400 ₪ אינו עומד בתנאי.'
+    },
+    {type:'exam',chapter:99,id:'eq4',exType:'match',
+      q:'התאם בין סוג הדו"ח לתיאורו:',
+      pairs:[
+        {lbl:'דו"ח ללא קנס ונקודות',correct:'התראה (אזהרה)'},
+        {lbl:'הגשת ערר לבית דין מנהלי',correct:'הפרת תעבורה מנהלית'},
+        {lbl:'נמסר לנהג בדואר, לא מוסרים העתק',correct:'פנימי (לבן)'},
+        {lbl:'הנהג מציין תאריך דיון',correct:'הזמנה לדין'}
+      ],
+      matchOpts:['התראה (אזהרה)','הפרת תעבורה מנהלית','פנימי (לבן)','הזמנה לדין'],
+      explain:'כל סוג: אזהרה=ללא קנס; הפרה מנהלית=ערר לבית דין; פנימי=בדואר; הזמנה לדין=תאריך דיון.'
+    },
+    {type:'exam',chapter:99,id:'eq5',exType:'mc',
+      q:'שוטר עצר שופט בעבירת ברירת משפט. איזה דו"ח ירשום?',
+      opts:['ברירת משפט','פנימי (לבן)','הזמנה לדין','אזהרה'],
+      correct:1,explain:'שופט בעבירת ב"מ – רושמים דו"ח פנימי. הדו"ח הפנימי ניתן לשופט גם בעבירות שאינן הזמנה לדין.'
+    },
+    {type:'exam',chapter:99,id:'eq6',exType:'mc',
+      q:'בדו"ח הפרת תעבורה מנהלית, ערעור על עצם ההפרה מוגש לאן?',
+      opts:['למפנ"א – כמו בברירת משפט','לבית משפט לתעבורה','ישירות לבית דין מנהלי לתעבורה – הגשה מקוונת','לאגף התנועה הארצי'],
+      correct:2,
+      explain:'ערעור על הפרה מנהלית מוגש ישירות לבית דין מנהלי לתעבורה – באופן מקוון. שונה מב"מ שמוגש דרך מפנ"א.'
+    },
+    {type:'exam',chapter:99,id:'eq7',exType:'tf',
+      q:'נהג שביצע שתי עבירות ב"מ יקבל דו"ח אחד הכולל שני סעיפים.',
+      correct:false,explain:'לא נכון. שתי ב"מ = שני דו"חות נפרדים עם הפניה הדדית.'
+    },
+    {type:'exam',chapter:99,id:'eq8',exType:'mc',
+      q:'שוטר החליט לרשום אזהרה לנהגת. מה חובה לרשום בשדה הנסיבות?',
+      opts:['את מספר שנות הוותק','שהנסיבות אינן חמורות','שנבדק במערכות המשטרתיות ועומד בקריטריונים','אין חובת ציון מיוחדת'],
+      correct:2,explain:'חובה: "נבדק במערכות משטרתיות ועומד בקריטריונים – זכאי לדו"ח אזהרה".'
+    },
+    {type:'exam',chapter:99,id:'eq9',exType:'tf',
+      q:'דו"ח פנימי נמסר לנהג על ידי השוטר בשטח, בסיום כתיבת הדו"ח.',
+      correct:false,explain:'לא נכון. דו"ח פנימי לא נמסר לנהג בשטח. הנהג מקבל עותק מודפס בדואר. השוטר שומר: מקור + העתק.'
+    },
+    {type:'exam',chapter:99,id:'eq10',exType:'mc',
+      q:'מהו ותק הנהיגה המינימלי הנדרש לקבלת דו"ח אזהרה (לפי עדכון 08.09.2025)?',
+      opts:['5 שנות ותק','7 שנות ותק','3 שנות ותק','10 שנות ותק'],
+      correct:1,explain:'אחד מ-5 התנאים המצטברים: ותק נהיגה של לפחות 7 שנים (עדכון 08.09.2025).'
+    }
+  ];
+  /* Shuffle exam */
+  for(var i=examQ.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=examQ[i];examQ[i]=examQ[j];examQ[j]=t;}
+  examQ.forEach(function(q){ S.push(q); });
+
+  /* ─── RESULTS ────────────────────────── */
+  S.push({type:'results',chapter:99});
+
+  return S;
+}
+
+})();
+</script>
+</body>
+</html>
