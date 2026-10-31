@@ -669,6 +669,7 @@ document.getElementById('btn-next').addEventListener('click', function(){ nav(1)
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMob(); });
 })();
 
+function escHtml(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function startApp(){
   var v = document.getElementById('inp-name').value.trim();
   if(!v){ document.getElementById('name-err').style.display='block'; document.getElementById('inp-name').focus(); return; }
@@ -1030,7 +1031,7 @@ function renderResults(){
       '<div class="cert-title">📜 אישור ביצוע לומדה</div>' +
       '<div class="cert-body">' +
         '<p>מאשר בזאת כי</p>' +
-        '<p class="cert-name">'+name+'</p>' +
+        '<p class="cert-name">'+escHtml(name)+'</p>' +
         '<p>השלים/ה את לומדת <strong>הכרת דו"חות תנועה</strong></p>' +
         '<p>ציון סופי: <strong>'+score+' מתוך '+total+' ('+pct+'%)</strong></p>' +
         '<p class="cert-date">'+date+'</p>' +
@@ -1043,7 +1044,7 @@ function renderResults(){
 
   return (
     '<div class="results-hero '+heroClass+'">' +
-      '<div class="rh-name">'+name+'</div>' +
+      '<div class="rh-name">'+escHtml(name)+'</div>' +
       '<div class="rh-score">'+score+'/'+total+'</div>' +
       '<div class="rh-pct">'+pct+'%</div>' +
       '<div class="rh-date">'+date+'</div>' +
